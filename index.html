@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Cup 2026 Sticker Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="page-header">
+        <div class="header-inner">
+            <h1>World Cup 2026 Sticker Collection</h1>
+            <div class="counter">
+                <div class="counter-main">
+                    <span id="count-owned">0</span> / <span id="count-all">0</span>
+                    <span class="counter-label">collected</span>
+                    <span class="counter-pct" id="count-pct">0%</span>
+                </div>
+                <div class="counter-sub" id="count-dups">0 duplicates</div>
+                <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+            </div>
+            <div class="filter-bar">
+                <div class="filter-buttons" role="group" aria-label="Filter stickers">
+                    <button class="filter-btn active" data-filter="all" type="button">All</button>
+                    <button class="filter-btn" data-filter="missing" type="button">Missing</button>
+                    <button class="filter-btn" data-filter="collected" type="button">Collected</button>
+                    <button class="filter-btn" data-filter="duplicates" type="button">Duplicates</button>
+                </div>
+                <input type="search" id="search-input" class="search-input" placeholder="Search code or team…" autocomplete="off" spellcheck="false" aria-label="Search by sticker code or team name">
+            </div>
+            <p class="hint">Left-click adds one to your count. Right-click subtracts one (minimum 0).</p>
+        </div>
+    </header>
+    <main>
+        <div id="sections"></div>
+    </main>
+    <footer class="page-footer">
+        <button id="export-btn" class="btn btn-secondary" type="button">Export my collection</button>
+        <button id="reset-btn" class="btn btn-danger" type="button">Reset Collection</button>
+    </footer>
+
+    <div id="reset-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-backdrop" data-modal-close="true"></div>
+        <div class="modal-card">
+            <h2 id="modal-title" class="modal-title">Reset entire collection?</h2>
+            <p class="modal-body">Are you sure you want to reset your entire collection? This cannot be undone.</p>
+            <div class="modal-actions">
+                <button id="modal-cancel" class="btn btn-secondary" type="button">Cancel</button>
+                <button id="modal-confirm" class="btn btn-danger" type="button">Yes, reset everything</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="stickers.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
