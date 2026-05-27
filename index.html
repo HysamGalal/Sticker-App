@@ -6,41 +6,328 @@
     <title>World Cup 2026 Sticker Tracker</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css">
+    <link rel="stylesheet" href="styles.css?v=5">
+    <meta name="theme-color" content="#FAF7F2" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#18171A" media="(prefers-color-scheme: dark)">
 </head>
 <body>
-    <header class="page-header">
-        <div class="header-inner">
-            <h1>World Cup 2026 Sticker Collection</h1>
-            <div class="counter">
-                <div class="counter-main">
-                    <span id="count-owned">0</span> / <span id="count-all">0</span>
-                    <span class="counter-label">collected</span>
-                    <span class="counter-pct" id="count-pct">0%</span>
-                </div>
-                <div class="counter-sub" id="count-dups">0 duplicates</div>
-                <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <!-- ===== Auth screen: shown until user signs in ===== -->
+    <div id="auth-screen" class="auth-screen hidden" aria-hidden="true">
+        <div class="auth-card">
+            <h1 class="auth-title">World Cup 2026 Stickers</h1>
+            <p class="auth-subtitle">Sign in to track your collection.</p>
+
+            <div class="auth-tabs" role="tablist">
+                <button id="auth-tab-signin" class="auth-tab active" data-mode="signin" type="button" role="tab" aria-selected="true">Sign in</button>
+                <button id="auth-tab-signup" class="auth-tab" data-mode="signup" type="button" role="tab" aria-selected="false">Sign up</button>
             </div>
-            <div class="filter-bar">
-                <div class="filter-buttons" role="group" aria-label="Filter stickers">
-                    <button class="filter-btn active" data-filter="all" type="button">All</button>
-                    <button class="filter-btn" data-filter="missing" type="button">Missing</button>
-                    <button class="filter-btn" data-filter="collected" type="button">Collected</button>
-                    <button class="filter-btn" data-filter="duplicates" type="button">Duplicates</button>
-                </div>
-                <input type="search" id="search-input" class="search-input" placeholder="Search code or team…" autocomplete="off" spellcheck="false" aria-label="Search by sticker code or team name">
-            </div>
-            <p class="hint">Left-click adds one to your count. Right-click subtracts one (minimum 0).</p>
+
+            <form id="auth-form" class="auth-form" autocomplete="on">
+                <label class="auth-field">
+                    <span>Email</span>
+                    <input id="auth-email" type="email" required autocomplete="email" spellcheck="false">
+                </label>
+                <label class="auth-field">
+                    <span>Password</span>
+                    <input id="auth-password" type="password" required minlength="6" autocomplete="current-password">
+                </label>
+                <label class="auth-field auth-field-name hidden">
+                    <span>Display name <em>(optional)</em></span>
+                    <input id="auth-name" type="text" autocomplete="name">
+                </label>
+
+                <button id="auth-submit" class="btn btn-primary auth-submit" type="submit">Sign in</button>
+                <p id="auth-error" class="auth-error" role="alert" aria-live="polite"></p>
+                <p id="auth-info" class="auth-info" aria-live="polite"></p>
+            </form>
         </div>
-    </header>
-    <main>
-        <div id="sections"></div>
-    </main>
-    <footer class="page-footer">
-        <button id="export-btn" class="btn btn-secondary" type="button">Export my collection</button>
-        <button id="reset-btn" class="btn btn-danger" type="button">Reset Collection</button>
-    </footer>
+    </div>
+
+    <!-- ===== Loading splash: shown while fetching the user's collection ===== -->
+    <div id="loading-screen" class="loading-screen hidden" aria-hidden="true">
+        <div class="loading-card">Loading your collection…</div>
+    </div>
+
+    <!-- ===== App shell: top bar + sidebar + main content ===== -->
+    <div id="app-shell" class="app-shell hidden">
+        <header class="top-bar">
+            <button id="hamburger" class="hamburger" type="button" aria-label="Open menu">
+                <i data-lucide="menu" aria-hidden="true"></i>
+            </button>
+            <h1 class="top-bar-title" id="top-bar-title">Album</h1>
+            <div class="top-bar-user">
+                <span class="user-label" id="user-label"></span>
+            </div>
+        </header>
+
+        <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+            <div class="sidebar-brand">
+                <span class="brand-mark" aria-hidden="true">26</span>
+                <span class="brand-text">World Cup Stickers</span>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-view="album" type="button">
+                    <i data-lucide="book-open" class="nav-icon" aria-hidden="true"></i>
+                    <span class="nav-label">Album</span>
+                </button>
+                <button class="nav-item" data-view="wanted" type="button">
+                    <i data-lucide="sparkles" class="nav-icon" aria-hidden="true"></i>
+                    <span class="nav-label">Wanted</span>
+                </button>
+                <button class="nav-item" data-view="trades" type="button">
+                    <i data-lucide="arrow-left-right" class="nav-icon" aria-hidden="true"></i>
+                    <span class="nav-label">Trades</span>
+                    <span class="nav-badge hidden" id="family-badge">0</span>
+                </button>
+                <button class="nav-item" data-view="community" type="button">
+                    <i data-lucide="users" class="nav-icon" aria-hidden="true"></i>
+                    <span class="nav-label">Community</span>
+                    <span class="nav-badge hidden" id="community-badge">0</span>
+                </button>
+                <button class="nav-item" data-view="activity" type="button">
+                    <i data-lucide="bell" class="nav-icon" aria-hidden="true"></i>
+                    <span class="nav-label">Activity</span>
+                </button>
+                <button class="nav-item" data-view="profile" type="button">
+                    <i data-lucide="circle-user-round" class="nav-icon" aria-hidden="true"></i>
+                    <span class="nav-label">Profile</span>
+                </button>
+            </nav>
+        </aside>
+
+        <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+        <main class="main-content">
+            <!-- ===== Pending-trade notification banner ===== -->
+            <div id="notification-banner" class="notification-banner hidden" role="status" aria-live="polite">
+                <span class="notification-icon" aria-hidden="true">
+                    <i data-lucide="inbox"></i>
+                </span>
+                <span id="notification-text" class="notification-text">You have pending trade requests</span>
+                <button id="notification-view" class="notification-action" type="button">Review</button>
+                <button id="notification-dismiss" class="notification-dismiss" type="button" aria-label="Dismiss">
+                    <i data-lucide="x" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <!-- ===== ALBUM VIEW ===== -->
+            <section class="view view-active" id="view-album">
+                <div class="album-header">
+                    <div class="counter">
+                        <div class="counter-main">
+                            <span id="count-owned">0</span> / <span id="count-all">0</span>
+                            <span class="counter-label">collected</span>
+                            <span class="counter-pct" id="count-pct">0%</span>
+                        </div>
+                        <div class="counter-sub" id="count-dups">0 duplicates</div>
+                        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+                    </div>
+                    <div class="filter-bar">
+                        <div class="filter-buttons" role="group" aria-label="Filter stickers">
+                            <button class="filter-btn active" data-filter="all" type="button">All</button>
+                            <button class="filter-btn" data-filter="missing" type="button">Missing</button>
+                            <button class="filter-btn" data-filter="collected" type="button">Collected</button>
+                            <button class="filter-btn" data-filter="duplicates" type="button">Duplicates</button>
+                        </div>
+                        <input type="search" id="search-input" class="search-input" placeholder="Search code or team…" autocomplete="off" spellcheck="false" aria-label="Search by sticker code or team name">
+                    </div>
+                    <p class="hint">Left-click adds one to your count. Right-click subtracts one (minimum 0).</p>
+                </div>
+                <div id="sections"></div>
+            </section>
+
+            <!-- ===== WANTED VIEW ===== -->
+            <section class="view" id="view-wanted">
+                <div class="view-header">
+                    <h2 class="view-title">Wanted</h2>
+                    <p class="view-subtitle">See who has the stickers you need, and who needs the stickers you have.</p>
+                </div>
+                <div id="wanted-label-bar" class="label-filter-bar wanted-label-bar hidden" role="toolbar" aria-label="Filter by label"></div>
+                <div class="wanted-controls">
+                    <div class="wanted-tabs" role="tablist">
+                        <button class="wanted-tab active" data-wanted-tab="i-need" type="button" role="tab" aria-selected="true">
+                            <i data-lucide="inbox" class="inline-icon" aria-hidden="true"></i>
+                            I'm missing
+                        </button>
+                        <button class="wanted-tab" data-wanted-tab="others-need" type="button" role="tab" aria-selected="false">
+                            <i data-lucide="send" class="inline-icon" aria-hidden="true"></i>
+                            Others are missing
+                        </button>
+                    </div>
+                    <div class="wanted-group-toggle" role="tablist" aria-label="Group results by">
+                        <button class="wanted-group active" data-wanted-group="sticker" type="button" role="tab" aria-selected="true">
+                            <i data-lucide="layout-grid" class="inline-icon" aria-hidden="true"></i>
+                            By sticker
+                        </button>
+                        <button class="wanted-group" data-wanted-group="person" type="button" role="tab" aria-selected="false">
+                            <i data-lucide="user-round" class="inline-icon" aria-hidden="true"></i>
+                            By person
+                        </button>
+                    </div>
+                    <input type="search" id="wanted-search" class="search-input wanted-search" placeholder="Filter by code or player…" autocomplete="off" spellcheck="false">
+                </div>
+                <div id="wanted-list" class="wanted-list"></div>
+                <div id="wanted-empty" class="placeholder-view hidden">
+                    <div class="placeholder-icon"><i data-lucide="sparkles" aria-hidden="true"></i></div>
+                    <h3>Nothing to show</h3>
+                    <p>Either you're complete on this tab, no other members exist yet, or your filter matches nothing.</p>
+                </div>
+            </section>
+
+            <!-- ===== TRADES VIEW ===== -->
+            <section class="view" id="view-trades">
+                <div class="view-header">
+                    <h2 class="view-title">Trades</h2>
+                    <p class="view-subtitle">Your trade requests, in-progress trades, and completed history.</p>
+                </div>
+                <div id="pending-requests-section" class="pending-section hidden"></div>
+                <div id="completed-trades-section" class="pending-section hidden">
+                    <div class="pending-section-title">
+                        <i data-lucide="check-check" class="inline-icon" aria-hidden="true"></i>
+                        Completed
+                    </div>
+                    <div id="completed-trades-list"></div>
+                </div>
+                <div id="trades-empty-state" class="placeholder-view hidden">
+                    <div class="placeholder-icon"><i data-lucide="handshake" aria-hidden="true"></i></div>
+                    <h3>No trades yet</h3>
+                    <p>Head to <strong>Community</strong> to propose your first trade.</p>
+                </div>
+            </section>
+
+            <!-- ===== COMMUNITY VIEW ===== -->
+            <section class="view" id="view-community">
+                <!-- Sub-view A: member list -->
+                <div id="community-list-subview" class="community-subview">
+                    <div class="view-header">
+                        <h2 class="view-title">Community</h2>
+                        <p class="view-subtitle">Pick a member to see trade matches and propose a trade.</p>
+                    </div>
+                    <div id="label-filter-bar" class="label-filter-bar" role="toolbar" aria-label="Filter by label"></div>
+                    <div id="family-list" class="family-list"></div>
+                </div>
+
+                <!-- Sub-view B: trade builder (shown when a member is clicked) -->
+                <div id="community-trade-subview" class="community-subview hidden">
+                    <div class="community-trade-layout">
+                        <div class="community-trade-main">
+                            <button id="trade-back" class="trade-back" type="button">
+                                <i data-lucide="arrow-left" class="inline-icon" aria-hidden="true"></i>
+                                Back to community
+                            </button>
+                            <h2 id="trade-title" class="view-title">Trade</h2>
+                            <p class="trade-legend">Tick stickers to include in the trade. Use search to add stickers that aren't duplicates.</p>
+
+                            <div class="trade-sections">
+                        <section class="trade-section">
+                            <div class="trade-section-header">
+                                <h3 class="trade-section-title">
+                                    <i data-lucide="inbox" class="inline-icon" aria-hidden="true"></i>
+                                    Duplicates they have, you're missing
+                                </h3>
+                                <button class="trade-select-all" data-side="asks" type="button">Select all</button>
+                            </div>
+                            <div id="trade-they-have" class="trade-list"></div>
+
+                            <div class="trade-search-block">
+                                <label class="trade-search-label" for="trade-search-asks">Or ask for anything else they have:</label>
+                                <div class="trade-search-wrapper">
+                                    <input type="search" id="trade-search-asks" class="trade-search-input" placeholder="Type code or player name…" autocomplete="off">
+                                    <div id="trade-search-asks-results" class="trade-search-results hidden"></div>
+                                </div>
+                                <div id="trade-asks-extras" class="trade-extras-list"></div>
+                            </div>
+                        </section>
+
+                        <section class="trade-section">
+                            <div class="trade-section-header">
+                                <h3 class="trade-section-title">
+                                    <i data-lucide="send" class="inline-icon" aria-hidden="true"></i>
+                                    Duplicates you have, they're missing
+                                </h3>
+                                <button class="trade-select-all" data-side="gives" type="button">Select all</button>
+                            </div>
+                            <div id="trade-you-have" class="trade-list"></div>
+
+                            <div class="trade-search-block">
+                                <label class="trade-search-label" for="trade-search-gives">Or offer anything else you own:</label>
+                                <div class="trade-search-wrapper">
+                                    <input type="search" id="trade-search-gives" class="trade-search-input" placeholder="Type code or player name…" autocomplete="off">
+                                    <div id="trade-search-gives-results" class="trade-search-results hidden"></div>
+                                </div>
+                                <div id="trade-gives-extras" class="trade-extras-list"></div>
+                            </div>
+                        </section>
+                    </div>
+
+                            <div class="trade-footer">
+                                <div id="trade-summary" class="trade-summary">Asking: 0 · Offering: 0</div>
+                                <button id="trade-propose" class="btn btn-primary" type="button" disabled>Propose trade</button>
+                            </div>
+                        </div>
+                        <aside class="community-trade-chat">
+                            <div class="community-chat-header">
+                                <i data-lucide="message-square" class="inline-icon" aria-hidden="true"></i>
+                                <span id="community-chat-title">Chat</span>
+                            </div>
+                            <div id="community-chat-host" class="community-chat-host"></div>
+                        </aside>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== ACTIVITY VIEW ===== -->
+            <section class="view" id="view-activity">
+                <div class="view-header">
+                    <h2 class="view-title">Activity</h2>
+                    <p class="view-subtitle">Recent trade events and new members.</p>
+                </div>
+                <div id="activity-feed" class="activity-feed"></div>
+                <div id="activity-empty" class="placeholder-view hidden">
+                    <div class="placeholder-icon"><i data-lucide="bell" aria-hidden="true"></i></div>
+                    <h3>Nothing yet</h3>
+                    <p>Trade events and member joins will appear here as they happen.</p>
+                </div>
+            </section>
+
+            <!-- ===== PROFILE VIEW ===== -->
+            <section class="view" id="view-profile">
+                <div class="profile-view">
+                    <h2 class="profile-title">Your profile</h2>
+
+                    <div class="profile-card">
+                        <div class="profile-field">
+                            <div class="profile-field-label">Email</div>
+                            <div class="profile-field-value" id="profile-email">—</div>
+                        </div>
+                        <div class="profile-field">
+                            <div class="profile-field-label">Display name</div>
+                            <div class="profile-field-value">
+                                <span id="profile-display-name">—</span>
+                                <button class="btn btn-secondary btn-small" id="profile-edit-name" type="button">Edit</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-card">
+                        <h3 class="profile-card-title">Your collection</h3>
+                        <div class="profile-actions">
+                            <button id="import-btn" class="btn btn-secondary hidden" type="button">Import my old data</button>
+                            <button id="export-btn" class="btn btn-secondary" type="button">Export my collection</button>
+                            <button id="reset-btn" class="btn btn-danger" type="button">Reset Collection</button>
+                        </div>
+                    </div>
+
+                    <div class="profile-card">
+                        <h3 class="profile-card-title">Account</h3>
+                        <button id="signout-btn" class="btn btn-secondary" type="button">Sign out</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
 
     <div id="reset-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="modal-backdrop" data-modal-close="true"></div>
@@ -54,6 +341,44 @@
         </div>
     </div>
 
+    <!-- ===== Label manager modal (Phase 3) ===== -->
+    <div id="label-manager-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="label-manager-title">
+        <div class="modal-backdrop" data-label-close="true"></div>
+        <div class="modal-card label-manager-card">
+            <button class="modal-close-x" id="label-manager-close" type="button" aria-label="Close">
+                <i data-lucide="x" aria-hidden="true"></i>
+            </button>
+            <h2 id="label-manager-title" class="modal-title">Manage labels</h2>
+            <p class="modal-body">Group members however you like — labels are private to you and help filter your views.</p>
+            <div id="label-manager-body"></div>
+        </div>
+    </div>
+
+    <!-- ===== Group chat modal (label-scoped group conversation) ===== -->
+    <div id="group-chat-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="group-chat-title">
+        <div class="modal-backdrop" data-group-chat-close="true"></div>
+        <div class="modal-card group-chat-card">
+            <button class="modal-close-x" id="group-chat-close" type="button" aria-label="Close">
+                <i data-lucide="x" aria-hidden="true"></i>
+            </button>
+            <div class="group-chat-header">
+                <div class="group-chat-title-wrap">
+                    <span id="group-chat-dot" class="member-label-dot" aria-hidden="true"></span>
+                    <h2 id="group-chat-title" class="modal-title">Group chat</h2>
+                </div>
+                <button id="group-chat-members-toggle" class="btn btn-secondary btn-small" type="button">
+                    <i data-lucide="users" class="inline-icon" aria-hidden="true"></i>
+                    Members
+                </button>
+            </div>
+            <div id="group-chat-members-pane" class="group-chat-members-pane hidden"></div>
+            <div id="group-chat-panel-host" class="group-chat-panel-host"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="supabase-config.js"></script>
     <script src="stickers.js"></script>
     <script src="app.js"></script>
 </body>

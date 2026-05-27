@@ -1,20 +1,11 @@
-# OS junk
-Thumbs.db
-ehthumbs.db
-Desktop.ini
+﻿# OS metadata
 .DS_Store
+Thumbs.db
+desktop.ini
 
-# Claude Code local state (machine-specific)
-.claude/
-
-# Reference material — large binaries, not source
-Design Looks/
-
-# Editor / IDE
+# Editor files
 .vscode/
 .idea/
-*.swp
-*~
 
-# Logs
+# Logs and temp
 *.log
