@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css">
-    <link rel="stylesheet" href="styles.css?v=5">
+    <link rel="stylesheet" href="styles.css?v=8">
     <meta name="theme-color" content="#FAF7F2" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#18171A" media="(prefers-color-scheme: dark)">
 </head>
@@ -39,8 +39,46 @@
                 </label>
 
                 <button id="auth-submit" class="btn btn-primary auth-submit" type="submit">Sign in</button>
+                <p class="auth-link-row auth-link-forgot">
+                    <button id="auth-forgot-link" class="auth-link" type="button">Forgot password?</button>
+                </p>
                 <p id="auth-error" class="auth-error" role="alert" aria-live="polite"></p>
                 <p id="auth-info" class="auth-info" aria-live="polite"></p>
+            </form>
+
+            <!-- Forgot-password mode: request a reset email. -->
+            <form id="forgot-form" class="auth-form hidden" autocomplete="on">
+                <p class="auth-subtitle auth-subtitle-inline">
+                    Enter your account email and we'll send you a link to set a new password.
+                </p>
+                <label class="auth-field">
+                    <span>Email</span>
+                    <input id="forgot-email" type="email" required autocomplete="email" spellcheck="false">
+                </label>
+                <button id="forgot-submit" class="btn btn-primary auth-submit" type="submit">Send reset link</button>
+                <p class="auth-link-row">
+                    <button id="forgot-back-link" class="auth-link" type="button">Back to sign in</button>
+                </p>
+                <p id="forgot-error" class="auth-error" role="alert" aria-live="polite"></p>
+                <p id="forgot-info" class="auth-info" aria-live="polite"></p>
+            </form>
+
+            <!-- Recovery mode: shown when the user lands here from a reset email link. -->
+            <form id="recovery-form" class="auth-form hidden" autocomplete="off">
+                <p class="auth-subtitle auth-subtitle-inline">
+                    Set a new password for your account.
+                </p>
+                <label class="auth-field">
+                    <span>New password</span>
+                    <input id="recovery-password" type="password" required minlength="6" autocomplete="new-password">
+                </label>
+                <label class="auth-field">
+                    <span>Confirm new password</span>
+                    <input id="recovery-password-confirm" type="password" required minlength="6" autocomplete="new-password">
+                </label>
+                <button id="recovery-submit" class="btn btn-primary auth-submit" type="submit">Update password</button>
+                <p id="recovery-error" class="auth-error" role="alert" aria-live="polite"></p>
+                <p id="recovery-info" class="auth-info" aria-live="polite"></p>
             </form>
         </div>
     </div>

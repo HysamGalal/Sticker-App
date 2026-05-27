@@ -1063,10 +1063,24 @@ function setAuthInfo(msg) {
     if (el) el.textContent = msg || "";
 }
 
+function setFormMessage(prefix, kind, msg) {
+    const el = document.getElementById(`${prefix}-${kind}`);
+    if (el) el.textContent = msg || "";
+}
+
 function clearAuthMessages() {
     setAuthError("");
     setAuthInfo("");
+    setFormMessage("forgot", "error", "");
+    setFormMessage("forgot", "info", "");
+    setFormMessage("recovery", "error", "");
+    setFormMessage("recovery", "info", "");
 }
+
+// True between the moment a recovery link is detected and the password update
+// completes. Used to suppress the normal "signed in → load collection" path,
+// since Supabase opens a session with the recovery token.
+let inRecoveryFlow = false;
 
 // Fetch the user's collection rows from Supabase and populate the in-memory map.
 async function loadCollectionFromCloud() {
@@ -1169,33 +1183,158 @@ function handleSignedOut() {
     clearAuthMessages();
 }
 
+// Exposed at module scope so init() can flip into recovery mode when a
+// reset-password link drops us back on the page.
+let setAuthMode = null;
+
 function wireAuthControls() {
     const tabSignin = document.getElementById("auth-tab-signin");
     const tabSignup = document.getElementById("auth-tab-signup");
+    const tabs = document.querySelector(".auth-tabs");
     const form = document.getElementById("auth-form");
+    const forgotForm = document.getElementById("forgot-form");
+    const recoveryForm = document.getElementById("recovery-form");
     const nameField = document.querySelector(".auth-field-name");
     const passwordInput = document.getElementById("auth-password");
     const submitBtn = document.getElementById("auth-submit");
+    const subtitle = document.querySelector(".auth-card > .auth-subtitle");
 
     let mode = "signin";
 
     const setMode = (next) => {
         mode = next;
         const isSignup = next === "signup";
-        tabSignin?.classList.toggle("active", !isSignup);
+        const isForgot = next === "forgot";
+        const isRecovery = next === "recovery";
+        const isCredentialForm = !isForgot && !isRecovery;
+
+        // Tabs only make sense for signin / signup; hide them otherwise.
+        tabs?.classList.toggle("hidden", !isCredentialForm);
+        tabSignin?.classList.toggle("active", next === "signin");
         tabSignup?.classList.toggle("active", isSignup);
-        tabSignin?.setAttribute("aria-selected", String(!isSignup));
+        tabSignin?.setAttribute("aria-selected", String(next === "signin"));
         tabSignup?.setAttribute("aria-selected", String(isSignup));
+
+        // Swap which form is visible.
+        form?.classList.toggle("hidden", !isCredentialForm);
+        forgotForm?.classList.toggle("hidden", !isForgot);
+        recoveryForm?.classList.toggle("hidden", !isRecovery);
+
+        // Signup-only display name field.
         nameField?.classList.toggle("hidden", !isSignup);
+
         if (passwordInput) {
             passwordInput.autocomplete = isSignup ? "new-password" : "current-password";
         }
         if (submitBtn) submitBtn.textContent = isSignup ? "Create account" : "Sign in";
+
+        // Subtitle text adapts to context. The forgot/recovery forms carry
+        // their own inline explainer, so we hide the card subtitle there.
+        if (subtitle) {
+            if (isRecovery) {
+                subtitle.textContent = "Almost there.";
+                subtitle.classList.remove("hidden");
+            } else if (isForgot) {
+                subtitle.classList.add("hidden");
+            } else {
+                subtitle.textContent = "Sign in to track your collection.";
+                subtitle.classList.remove("hidden");
+            }
+        }
+
         clearAuthMessages();
     };
+    setAuthMode = setMode;
 
     tabSignin?.addEventListener("click", () => setMode("signin"));
     tabSignup?.addEventListener("click", () => setMode("signup"));
+
+    document.getElementById("auth-forgot-link")?.addEventListener("click", () => {
+        // Pre-fill the forgot-form email with whatever the user already typed.
+        const typed = document.getElementById("auth-email")?.value?.trim();
+        const forgotEmail = document.getElementById("forgot-email");
+        if (forgotEmail && typed) forgotEmail.value = typed;
+        setMode("forgot");
+    });
+
+    document.getElementById("forgot-back-link")?.addEventListener("click", () => {
+        setMode("signin");
+    });
+
+    forgotForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        setFormMessage("forgot", "error", "");
+        setFormMessage("forgot", "info", "");
+        if (!sb) {
+            setFormMessage("forgot", "error", "Auth not initialized. Refresh the page.");
+            return;
+        }
+        const email = document.getElementById("forgot-email").value.trim();
+        const btn = document.getElementById("forgot-submit");
+        btn.disabled = true;
+        const originalLabel = btn.textContent;
+        btn.textContent = "Sending…";
+        try {
+            // redirectTo must match an allowed URL configured in the Supabase
+            // dashboard (Authentication → URL Configuration → Redirect URLs).
+            // We use the current origin + path so localhost dev works alongside
+            // a deployed origin without code changes.
+            const redirectTo = window.location.origin + window.location.pathname;
+            const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
+            if (error) throw error;
+            setFormMessage("forgot", "info", "If an account exists for that email, a reset link is on its way. Check your inbox.");
+        } catch (err) {
+            console.error(err);
+            setFormMessage("forgot", "error", err?.message || "Couldn't send reset email.");
+        } finally {
+            btn.disabled = false;
+            btn.textContent = originalLabel;
+        }
+    });
+
+    recoveryForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        setFormMessage("recovery", "error", "");
+        setFormMessage("recovery", "info", "");
+        if (!sb) {
+            setFormMessage("recovery", "error", "Auth not initialized. Refresh the page.");
+            return;
+        }
+        const pw1 = document.getElementById("recovery-password").value;
+        const pw2 = document.getElementById("recovery-password-confirm").value;
+        if (pw1.length < 6) {
+            setFormMessage("recovery", "error", "Password must be at least 6 characters.");
+            return;
+        }
+        if (pw1 !== pw2) {
+            setFormMessage("recovery", "error", "Passwords don't match.");
+            return;
+        }
+        const btn = document.getElementById("recovery-submit");
+        btn.disabled = true;
+        const originalLabel = btn.textContent;
+        btn.textContent = "Updating…";
+        try {
+            const { error } = await sb.auth.updateUser({ password: pw1 });
+            if (error) throw error;
+            // Done. Clear the recovery flag, scrub the access-token hash from
+            // the URL, sign out the recovery session, and bounce back to the
+            // sign-in form so the user logs in fresh with the new password.
+            inRecoveryFlow = false;
+            try {
+                history.replaceState(null, "", window.location.pathname + window.location.search);
+            } catch (_) { /* ignore */ }
+            await sb.auth.signOut();
+            setMode("signin");
+            setAuthInfo("Password updated. Sign in with your new password.");
+        } catch (err) {
+            console.error(err);
+            setFormMessage("recovery", "error", err?.message || "Couldn't update password.");
+        } finally {
+            btn.disabled = false;
+            btn.textContent = originalLabel;
+        }
+    });
 
     form?.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -4304,10 +4443,22 @@ async function init() {
     // Render all static lucide icons present in index.html.
     refreshIcons();
 
+    // Recovery links land here with `#access_token=...&type=recovery&...`.
+    // Detect that *before* we look at the session, so we don't accidentally
+    // load the app shell using the recovery session.
+    const hash = window.location.hash || "";
+    if (hash.includes("type=recovery")) {
+        inRecoveryFlow = true;
+    }
+
     // Check for an existing session (the SDK persists tokens in localStorage
     // separately, so refreshes keep the user signed in).
     const { data: { session } } = await sb.auth.getSession();
-    if (session?.user) {
+    if (inRecoveryFlow) {
+        // Show the "set a new password" form regardless of session state.
+        showAuthScreen();
+        setAuthMode?.("recovery");
+    } else if (session?.user) {
         await handleSignedIn(session.user);
     } else {
         showAuthScreen();
@@ -4315,7 +4466,18 @@ async function init() {
 
     // React to sign-in / sign-out events from anywhere.
     sb.auth.onAuthStateChange((event, session) => {
+        if (event === "PASSWORD_RECOVERY") {
+            // Fired by the SDK after it parses the recovery token from the URL.
+            inRecoveryFlow = true;
+            showAuthScreen();
+            setAuthMode?.("recovery");
+            return;
+        }
         if (event === "SIGNED_IN" && session?.user) {
+            // Suppress the normal post-signin flow while a recovery is in
+            // progress — the user hasn't actually signed in, the SDK just
+            // opened a session with the recovery token.
+            if (inRecoveryFlow) return;
             // Only do the full re-load if the user actually changed,
             // since this also fires on token refresh.
             if (!currentUser || currentUser.id !== session.user.id) {

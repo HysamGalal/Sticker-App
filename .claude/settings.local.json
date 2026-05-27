@@ -8,7 +8,9 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(git config *)",
-      "PowerShell(Rename-Item -Path \"Design Looks\\\\Gorup A.pdf\" -NewName \"Group A.pdf\")"
+      "PowerShell(Rename-Item -Path \"Design Looks\\\\Gorup A.pdf\" -NewName \"Group A.pdf\")",
+      "Bash(git push *)",
+      "mcp__Claude_Preview__preview_start"
     ]
   }
 }

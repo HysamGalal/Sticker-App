@@ -1853,6 +1853,12 @@ h1 {
     font-weight: 400;
 }
 
+.auth-form.hidden,
+.auth-tabs.hidden,
+.auth-subtitle.hidden {
+    display: none;
+}
+
 .auth-field.hidden {
     display: none;
 }
@@ -1914,6 +1920,44 @@ h1 {
 
 .auth-info {
     color: var(--text-muted);
+}
+
+.auth-link-row {
+    margin: 0;
+    text-align: center;
+}
+
+.auth-link-row.auth-link-forgot {
+    margin-top: 0.15rem;
+}
+
+.auth-link {
+    background: none;
+    border: none;
+    padding: 0.25rem 0.4rem;
+    color: var(--accent);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.auth-link:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
+}
+
+.auth-link:focus-visible {
+    outline: 2px solid var(--accent-ring, var(--accent));
+    outline-offset: 2px;
+}
+
+.auth-subtitle-inline {
+    margin: 0 0 0.25rem;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.4;
 }
 
 .loading-screen {
