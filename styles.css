@@ -4419,7 +4419,7 @@ input[type="search"].search-input,
     justify-content: center;
 }
 
-/* Vertical 5-step trade flow infographic */
+/* Vertical 4-step trade flow infographic */
 .trade-flow {
     list-style: none;
     padding: 0;
@@ -4427,59 +4427,77 @@ input[type="search"].search-input,
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: 460px;
-    counter-reset: trade-flow;
+    max-width: 480px;
 }
 .trade-flow-step {
     display: grid;
-    grid-template-columns: 36px 1fr;
-    gap: 16px;
-    padding: 10px 0;
+    grid-template-columns: 44px 1fr;
+    gap: 18px;
+    padding: 14px 0;
     position: relative;
     align-items: flex-start;
 }
-/* Vertical line connecting the numbers, behind them */
+/* Vertical line connecting the icons, behind them */
 .trade-flow-step:not(:last-child)::before {
     content: "";
     position: absolute;
-    left: 17px;
-    top: 38px;
-    bottom: -10px;
+    left: 21px;
+    top: 50px;
+    bottom: -6px;
     width: 1.5px;
     background: var(--line-2);
     z-index: 0;
 }
-.trade-flow-num {
-    width: 36px;
-    height: 36px;
+.trade-flow-icon {
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     background: var(--accent-soft);
     color: var(--accent);
     display: grid;
     place-items: center;
-    font-family: var(--font-mono);
-    font-weight: 700;
-    font-size: 13px;
-    line-height: 1;
     z-index: 1;
     border: 3px solid var(--bg);
     box-shadow: 0 0 0 1px var(--line);
 }
-.trade-flow-body { padding-top: 6px; min-width: 0; }
+.trade-flow-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 1.75;
+}
+.trade-flow-body { padding-top: 4px; min-width: 0; }
+.trade-flow-meta {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 3px;
+}
+.trade-flow-step:last-child .trade-flow-meta { color: var(--accent); }
 .trade-flow-title {
     font-family: var(--font-display);
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 600;
     color: var(--ink);
     letter-spacing: var(--display-letter);
-    margin-bottom: 3px;
+    margin-bottom: 4px;
     line-height: 1.25;
+}
+.trade-flow-title em {
+    font-style: normal;
+    color: var(--accent);
 }
 .trade-flow-desc {
     font-size: 13px;
     color: var(--muted);
     line-height: 1.5;
     letter-spacing: 0;
+}
+.trade-flow-desc strong {
+    color: var(--ink);
+    font-weight: 600;
 }
 
 /* ----- Legacy sticker stack (kept in case we want to add it back small later) ----- */

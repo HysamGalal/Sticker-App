@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css">
-    <link rel="stylesheet" href="styles.css?v=13">
+    <link rel="stylesheet" href="styles.css?v=14">
     <meta name="theme-color" content="#FAF7F2" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#18171A" media="(prefers-color-scheme: dark)">
 </head>
@@ -201,38 +201,43 @@
                         <div class="hero-visual">
                             <ol class="trade-flow" aria-label="How a trade works">
                                 <li class="trade-flow-step">
-                                    <span class="trade-flow-num">1</span>
+                                    <span class="trade-flow-icon" aria-hidden="true">
+                                        <i data-lucide="search-check"></i>
+                                    </span>
                                     <div class="trade-flow-body">
+                                        <div class="trade-flow-meta">Step 01</div>
                                         <div class="trade-flow-title">Find a match</div>
-                                        <div class="trade-flow-desc">A collector who has the stickers you're missing — and wants yours back.</div>
+                                        <div class="trade-flow-desc">Browse collectors whose dupes overlap your missing list — and who want yours back.</div>
                                     </div>
                                 </li>
                                 <li class="trade-flow-step">
-                                    <span class="trade-flow-num">2</span>
+                                    <span class="trade-flow-icon" aria-hidden="true">
+                                        <i data-lucide="arrow-left-right"></i>
+                                    </span>
                                     <div class="trade-flow-body">
-                                        <div class="trade-flow-title">Propose a swap</div>
-                                        <div class="trade-flow-desc">Pick stickers for both sides of the trade. They review and accept.</div>
+                                        <div class="trade-flow-meta">Step 02</div>
+                                        <div class="trade-flow-title">Propose &amp; accept</div>
+                                        <div class="trade-flow-desc">Pick stickers for both sides. They review your offer and accept.</div>
                                     </div>
                                 </li>
                                 <li class="trade-flow-step">
-                                    <span class="trade-flow-num">3</span>
+                                    <span class="trade-flow-icon" aria-hidden="true">
+                                        <i data-lucide="package"></i>
+                                    </span>
                                     <div class="trade-flow-body">
-                                        <div class="trade-flow-title">Mail your envelope</div>
-                                        <div class="trade-flow-desc">Drop it in the post. Stickers travel in both directions.</div>
+                                        <div class="trade-flow-meta">Step 03</div>
+                                        <div class="trade-flow-title">Mail it, mark <em>Sent</em></div>
+                                        <div class="trade-flow-desc">Drop the envelope in the post and tap <strong>Sent</strong>. Your album subtracts the stickers that left.</div>
                                     </div>
                                 </li>
                                 <li class="trade-flow-step">
-                                    <span class="trade-flow-num">4</span>
+                                    <span class="trade-flow-icon" aria-hidden="true">
+                                        <i data-lucide="package-check"></i>
+                                    </span>
                                     <div class="trade-flow-body">
-                                        <div class="trade-flow-title">Mark sent &amp; received</div>
-                                        <div class="trade-flow-desc">Each side taps the app when their envelope ships — and again when it arrives.</div>
-                                    </div>
-                                </li>
-                                <li class="trade-flow-step">
-                                    <span class="trade-flow-num">5</span>
-                                    <div class="trade-flow-body">
-                                        <div class="trade-flow-title">Album updates</div>
-                                        <div class="trade-flow-desc">Counts adjust automatically once both sides confirm. Trade complete.</div>
+                                        <div class="trade-flow-meta">Step 04 · Done</div>
+                                        <div class="trade-flow-title">It arrives, mark <em>Received</em></div>
+                                        <div class="trade-flow-desc">Tap <strong>Received</strong>. Your album adds them in and the trade marks complete.</div>
                                     </div>
                                 </li>
                             </ol>
