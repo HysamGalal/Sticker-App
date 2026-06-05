@@ -3978,27 +3978,32 @@ function computeWantedByPerson(tab) {
 
     const rows = otherIds.map((uid) => {
         const theirCol = familyData.collections[uid] || {};
-        let count = 0;
+        // Two complementary counts (regardless of which tab is active):
+        //   theyHave = stickers they own that I'm missing (their potential offer)
+        //   theyNeed = my dupes that they're missing       (their potential ask)
+        let theyHave = 0;
+        let theyNeed = 0;
         for (const section of STICKER_DATA) {
             for (const [code] of section.stickers) {
                 const myCount = myCol[code] || 0;
                 const theirCount = theirCol[code] || 0;
-                if (tab === "i-need") {
-                    // They have it (any count), I have zero.
-                    if (myCount === 0 && theirCount >= 1) count++;
-                } else {
-                    // I have extras, they have zero.
-                    if (myCount >= 2 && theirCount === 0) count++;
-                }
+                if (myCount === 0 && theirCount >= 1) theyHave++;
+                if (myCount >= 2 && theirCount === 0) theyNeed++;
             }
         }
+        // The "count" used for sorting + the big badge is whichever side
+        // of the trade the active tab cares about.
+        const count = tab === "i-need" ? theyHave : theyNeed;
+        const reciprocal = tab === "i-need" ? theyNeed : theyHave;
         return {
             userId: uid,
             displayName: profileNameById(uid),
             count,
+            reciprocal,
         };
     }).filter((r) => r.count > 0);
 
+    // Sort by primary count descending — most-tradeable people surface first.
     rows.sort((a, b) => b.count - a.count);
     return rows;
 }
@@ -4111,6 +4116,18 @@ function renderWantedPersonRow(row, tab) {
         ? `has ${row.count} ${word} you're missing`
         : `missing ${row.count} of your duplicate ${word}`;
     meta.appendChild(sub);
+
+    // Reciprocal sub-line — shows the OTHER side of the trade in a smaller font.
+    // Helps gauge fairness at a glance.
+    if (typeof row.reciprocal === "number" && row.reciprocal > 0) {
+        const sub2 = document.createElement("div");
+        sub2.className = "wanted-person-sub-secondary";
+        const recWord = row.reciprocal === 1 ? "sticker" : "stickers";
+        sub2.textContent = tab === "i-need"
+            ? `wants ${row.reciprocal} of your ${recWord}`
+            : `offers ${row.reciprocal} ${recWord} you need`;
+        meta.appendChild(sub2);
+    }
     card.appendChild(meta);
 
     // Big count chip — the headline metric.
