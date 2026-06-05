@@ -972,6 +972,7 @@ async function refreshProfileDisplayName() {
    ============================================================ */
 
 const VIEW_TITLES = {
+    home: "Home",
     album: "Album",
     wanted: "Wanted",
     trades: "Trades",
@@ -983,14 +984,14 @@ const VIEW_TITLES = {
 function getCurrentViewFromUrl() {
     try {
         const v = new URL(window.location.href).searchParams.get("view");
-        return v && VIEW_TITLES[v] ? v : "album";
+        return v && VIEW_TITLES[v] ? v : "home";
     } catch (e) {
         return "album";
     }
 }
 
 function showView(viewKey, options = {}) {
-    if (!VIEW_TITLES[viewKey]) viewKey = "album";
+    if (!VIEW_TITLES[viewKey]) viewKey = "home";
 
     // Toggle .view-active across all view sections.
     document.querySelectorAll(".view").forEach((el) => {
@@ -1021,6 +1022,8 @@ function showView(viewKey, options = {}) {
         refreshWantedView().catch((e) => console.warn(e));
     } else if (viewKey === "activity") {
         refreshActivityView().catch((e) => console.warn(e));
+    } else if (viewKey === "home") {
+        refreshHomeView().catch((e) => console.warn(e));
     }
 
     // Update URL (unless we're handling a popstate event).
@@ -4425,6 +4428,194 @@ async function refreshActivityView() {
     }
 }
 
+/* ============================================================
+   HOME / LANDING view (Phase 4 design migration)
+   ============================================================ */
+
+// Pick 4 visually-distinct sticker codes for the hero stack — uses real teams
+// from STICKER_DATA so the country flags come through.
+const HOME_HERO_TEAM_CODES = ["Argentina", "Brazil", "Japan", "Mexico"];
+
+function renderHomeHeroStack() {
+    const root = document.getElementById("home-hero-stack");
+    if (!root) return;
+    root.innerHTML = "";
+
+    // Build a sticker visual for each hero team — first sticker after the badge.
+    for (const teamName of HOME_HERO_TEAM_CODES) {
+        const section = STICKER_DATA.find((s) => s.team === teamName);
+        if (!section || !section.stickers || section.stickers.length < 2) continue;
+        // section.stickers[0] is the badge, [1] is the first player — use the team photo (badge) for the flag.
+        const [code, name] = section.stickers[1];
+
+        const card = document.createElement("div");
+        card.className = "home-hero-sticker";
+
+        const iso = getCountryCode(teamName);
+        if (iso) {
+            const flag = document.createElement("span");
+            flag.className = `sticker-flag fi fi-${iso}`;
+            card.appendChild(flag);
+        }
+        const codeEl = document.createElement("span");
+        codeEl.className = "sticker-code";
+        codeEl.textContent = formatStickerCode(code);
+        card.appendChild(codeEl);
+
+        const nameEl = document.createElement("span");
+        nameEl.className = "sticker-name";
+        nameEl.textContent = name;
+        card.appendChild(nameEl);
+
+        root.appendChild(card);
+    }
+}
+
+function renderHomeStats() {
+    let totalOwned = 0;
+    let totalExtras = 0;
+    let totalStickers = 0;
+    for (const section of STICKER_DATA) {
+        const s = computeStats(section.stickers);
+        totalOwned += s.owned;
+        totalExtras += s.extras;
+        totalStickers += s.total;
+    }
+    const pct = totalStickers === 0 ? 0 : (totalOwned / totalStickers) * 100;
+    const pctDisplay = pct === 0 || pct === 100 ? pct.toFixed(0) : pct.toFixed(1);
+
+    const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    };
+    set("home-stat-collected", totalOwned.toLocaleString());
+    set("home-stat-dupes", totalExtras.toLocaleString());
+    set("home-stat-pct", `${pctDisplay}%`);
+}
+
+// Pick 4 "featured" groups — sorted by progress descending, so the user sees
+// the ones they're closest to completing first.
+function renderHomeFeatured() {
+    const root = document.getElementById("home-featured");
+    if (!root) return;
+    root.innerHTML = "";
+
+    // Aggregate by group letter (A, B, ...) using the GROUPS constant.
+    const teamProgress = [];
+    for (const section of STICKER_DATA) {
+        const teamName = section.team;
+        // Skip non-team sections (Introduction, World Cup History, Coca-Cola).
+        if (!TEAM_META[teamName] || !Array.isArray(TEAM_META[teamName].colors)) {
+            // crude check; not all entries are real teams
+        }
+        if (!isRealTeam(teamName)) continue;
+        const s = computeStats(section.stickers);
+        const group = findTeamGroup(teamName);
+        teamProgress.push({ teamName, group, owned: s.owned, total: s.total });
+    }
+
+    teamProgress.sort((a, b) => {
+        const ap = a.total === 0 ? 0 : a.owned / a.total;
+        const bp = b.total === 0 ? 0 : b.owned / b.total;
+        return bp - ap;
+    });
+
+    const featured = teamProgress.slice(0, 4);
+    for (const t of featured) {
+        const pct = t.total === 0 ? 0 : Math.round((t.owned / t.total) * 100);
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "featured-team";
+        card.innerHTML =
+            `<div class="featured-team-code">GROUP ${escapeHtml(t.group || "?")} · ${escapeHtml(t.teamName.toUpperCase())}</div>` +
+            `<div class="featured-team-name">${escapeHtml(t.teamName)}</div>` +
+            `<div>` +
+                `<div class="featured-team-prog"><span>${t.owned}/${t.total}</span><span>${pct}%</span></div>` +
+                `<div class="progress-bar"><i style="width: ${pct}%"></i></div>` +
+            `</div>`;
+        card.addEventListener("click", () => {
+            showView("album");
+            // Scroll to team after navigation paints.
+            setTimeout(() => {
+                const el = document.querySelector(`[data-team="${CSS.escape(t.teamName)}"]`);
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 100);
+        });
+        root.appendChild(card);
+    }
+}
+
+// Helper: find which group a team is in. Returns "A", "B", etc.
+function findTeamGroup(teamName) {
+    if (typeof GROUPS === "undefined") return "";
+    for (const letter of Object.keys(GROUPS)) {
+        if (GROUPS[letter].includes(teamName)) return letter;
+    }
+    return "";
+}
+
+function isRealTeam(teamName) {
+    const NON_TEAM = new Set(["Introduction", "FIFA World Cup History", "Coca-Cola Insert Set"]);
+    return !NON_TEAM.has(teamName);
+}
+
+// Recent activity strip (top 5 events).
+async function renderHomeActivity() {
+    const root = document.getElementById("home-activity");
+    if (!root) return;
+    root.innerHTML = '<div class="home-activity-empty">Loading…</div>';
+
+    try {
+        if (!familyData) familyData = await fetchFamilyData();
+        const trades = await fetchAllMyTrades();
+        const events = buildActivityEvents(trades, familyData?.profiles || []).slice(0, 5);
+
+        root.innerHTML = "";
+        if (events.length === 0) {
+            root.innerHTML = '<div class="home-activity-empty">Nothing yet. Trades and member joins will appear here as they happen.</div>';
+            return;
+        }
+        for (const e of events) {
+            const row = document.createElement("div");
+            row.className = "home-activity-row";
+            const dot = document.createElement("span");
+            dot.className = `home-activity-dot ${e.tone || "neutral"}`;
+            row.appendChild(dot);
+            const txt = document.createElement("span");
+            txt.className = "home-activity-text";
+            txt.innerHTML = e.text;
+            row.appendChild(txt);
+            const t = document.createElement("span");
+            t.className = "home-activity-when";
+            t.textContent = timeAgo(e.time);
+            row.appendChild(t);
+            root.appendChild(row);
+        }
+    } catch (e) {
+        console.error("Home activity failed:", e);
+        root.innerHTML = '<div class="home-activity-empty">Couldn\'t load activity.</div>';
+    }
+}
+
+async function refreshHomeView() {
+    if (!sb || !currentUser) return;
+    renderHomeStats();
+    renderHomeHeroStack();
+    renderHomeFeatured();
+    // Activity is async — let it stream in.
+    renderHomeActivity().catch((e) => console.warn(e));
+}
+
+// Hero action buttons (Open my album / Browse traders) — wire once at init time.
+function wireHomeControls() {
+    document.querySelectorAll("[data-route]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const target = btn.getAttribute("data-route");
+            if (target) showView(target);
+        });
+    });
+}
+
 async function init() {
     // Sanity check: config + SDK present?
     if (typeof SUPABASE_URL !== "string" || typeof SUPABASE_PUBLISHABLE_KEY !== "string") {
@@ -4447,6 +4638,7 @@ async function init() {
     wireWantedControls();
     wireLabelManagerControls();
     wireGroupChatControls();
+    wireHomeControls();
 
     // Render all static lucide icons present in index.html.
     refreshIcons();

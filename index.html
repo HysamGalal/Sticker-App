@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css">
-    <link rel="stylesheet" href="styles.css?v=11">
+    <link rel="stylesheet" href="styles.css?v=12">
     <meta name="theme-color" content="#FAF7F2" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#18171A" media="(prefers-color-scheme: dark)">
 </head>
@@ -106,7 +106,11 @@
                 <span class="brand-text">World Cup Stickers</span>
             </div>
             <nav class="sidebar-nav">
-                <button class="nav-item active" data-view="album" type="button">
+                <button class="nav-item active" data-view="home" type="button">
+                    <i data-lucide="home" class="nav-icon" aria-hidden="true"></i>
+                    <span class="nav-label">Home</span>
+                </button>
+                <button class="nav-item" data-view="album" type="button">
                     <i data-lucide="book-open" class="nav-icon" aria-hidden="true"></i>
                     <span class="nav-label">Album</span>
                 </button>
@@ -159,8 +163,127 @@
                 </button>
             </div>
 
+            <!-- ===== HOME / LANDING VIEW ===== -->
+            <section class="view view-active" id="view-home">
+                <div class="container home-container">
+                    <section class="hero">
+                        <div>
+                            <div class="hero-eyebrow">
+                                <span class="hero-dot" aria-hidden="true"></span>
+                                <span class="eyebrow">Trading is open · Summer 2026</span>
+                            </div>
+                            <h1 class="h-display">
+                                The album fills<br>faster when you<br><em>trade</em>.
+                            </h1>
+                            <p class="body-lg" style="margin-top: 24px; max-width: 480px;">
+                                Track every sticker you own, find collectors with the ones you're missing,
+                                and propose fair swaps — no packing tape or DMs.
+                            </p>
+                            <div class="hero-actions">
+                                <button class="btn primary lg" data-route="album" type="button">Open my album</button>
+                                <button class="btn ghost lg" data-route="community" type="button">Browse traders</button>
+                            </div>
+                            <div class="hero-stats">
+                                <div class="hero-stat">
+                                    <div class="hero-stat-num tabular" id="home-stat-collected">0</div>
+                                    <div class="hero-stat-lbl">Stickers collected</div>
+                                </div>
+                                <div class="hero-stat">
+                                    <div class="hero-stat-num tabular" id="home-stat-dupes">0</div>
+                                    <div class="hero-stat-lbl">Dupes to trade</div>
+                                </div>
+                                <div class="hero-stat">
+                                    <div class="hero-stat-num tabular" id="home-stat-pct">0%</div>
+                                    <div class="hero-stat-lbl">Album complete</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hero-visual" aria-hidden="true">
+                            <div class="hero-stack" id="home-hero-stack"></div>
+                        </div>
+                    </section>
+
+                    <section class="section-tight">
+                        <div class="h-eyebrow-row">
+                            <span class="eyebrow">Featured groups</span>
+                            <span class="rule" aria-hidden="true"></span>
+                            <button class="btn ghost sm" data-route="album" type="button">View all 12 →</button>
+                        </div>
+                        <div class="featured-grid" id="home-featured"></div>
+                    </section>
+
+                    <section class="section home-double">
+                        <div>
+                            <div class="h-eyebrow-row">
+                                <span class="eyebrow">Live activity</span>
+                                <span class="rule" aria-hidden="true"></span>
+                            </div>
+                            <div class="home-activity" id="home-activity"></div>
+                        </div>
+                        <div>
+                            <div class="h-eyebrow-row">
+                                <span class="eyebrow">How it works</span>
+                                <span class="rule" aria-hidden="true"></span>
+                            </div>
+                            <div class="howto-list">
+                                <div class="howto-row">
+                                    <div class="howto-icon">
+                                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="3.5" y="3.5" width="17" height="17" rx="3"/>
+                                            <path d="m8 12.5 3 3 5-6"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="howto-title">Log what you have</div>
+                                        <div class="howto-desc">Tap stickers as you peel them. Duplicates count automatically.</div>
+                                    </div>
+                                </div>
+                                <div class="howto-row">
+                                    <div class="howto-icon">
+                                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="10" cy="10" r="6.5"/>
+                                            <path d="m15 15 5 5"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="howto-title">Find a match</div>
+                                        <div class="howto-desc">We surface collectors whose missing list overlaps with your dupes.</div>
+                                    </div>
+                                </div>
+                                <div class="howto-row">
+                                    <div class="howto-icon">
+                                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M4 8h13l-3-3"/>
+                                            <path d="M20 16H7l3 3"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="howto-title">Propose a swap</div>
+                                        <div class="howto-desc">Pick stickers for both sides of the trade. Both confirm. Ship and review.</div>
+                                    </div>
+                                </div>
+                                <div class="howto-row">
+                                    <div class="howto-icon">
+                                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M3 7.5 12 3l9 4.5"/>
+                                            <path d="M3 7.5v9L12 21l9-4.5v-9"/>
+                                            <path d="M3 7.5 12 12l9-4.5"/>
+                                            <path d="M12 12v9"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="howto-title">Ship & confirm</div>
+                                        <div class="howto-desc">Mail your envelope, mark as sent, confirm on arrival. Album updates automatically.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
             <!-- ===== ALBUM VIEW ===== -->
-            <section class="view view-active" id="view-album">
+            <section class="view" id="view-album">
                 <div class="album-header">
                     <div class="counter">
                         <div class="counter-main">
