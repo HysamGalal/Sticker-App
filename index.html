@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css">
-    <link rel="stylesheet" href="styles.css?v=15">
+    <link rel="stylesheet" href="styles.css?v=16">
     <meta name="theme-color" content="#FAF7F2" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#18171A" media="(prefers-color-scheme: dark)">
 </head>
@@ -115,12 +115,8 @@
                     <span class="nav-label">Album</span>
                 </button>
                 <button class="nav-item" data-view="wanted" type="button">
-                    <i data-lucide="sparkles" class="nav-icon" aria-hidden="true"></i>
-                    <span class="nav-label">Wanted</span>
-                </button>
-                <button class="nav-item" data-view="trades" type="button">
                     <i data-lucide="arrow-left-right" class="nav-icon" aria-hidden="true"></i>
-                    <span class="nav-label">Trades</span>
+                    <span class="nav-label">Trade</span>
                     <span class="nav-badge hidden" id="family-badge">0</span>
                 </button>
                 <button class="nav-item" data-view="community" type="button">
@@ -290,11 +286,18 @@
                 <div id="sections"></div>
             </section>
 
-            <!-- ===== WANTED VIEW ===== -->
+            <!-- ===== TRADE: Discover sub-view (what was "Wanted") ===== -->
             <section class="view" id="view-wanted">
                 <div class="view-header">
-                    <h2 class="view-title">Wanted</h2>
-                    <p class="view-subtitle">See who has the stickers you need, and who needs the stickers you have.</p>
+                    <h2 class="view-title">Trade</h2>
+                    <p class="view-subtitle">Find the people who can complete your album — and check on trades you've already started.</p>
+                </div>
+                <div class="trade-subview-tabs" role="tablist" aria-label="Trade sections">
+                    <button class="trade-subview-tab active" data-trade-tab="discover" type="button" role="tab" aria-selected="true">Discover</button>
+                    <button class="trade-subview-tab" data-trade-tab="mine" type="button" role="tab" aria-selected="false">
+                        My trades
+                        <span class="trade-subview-badge hidden" id="trade-mine-badge">0</span>
+                    </button>
                 </div>
                 <div id="wanted-label-bar" class="label-filter-bar wanted-label-bar hidden" role="toolbar" aria-label="Filter by label"></div>
                 <div class="wanted-controls">
@@ -309,11 +312,11 @@
                         </button>
                     </div>
                     <div class="wanted-group-toggle" role="tablist" aria-label="Group results by">
-                        <button class="wanted-group active" data-wanted-group="sticker" type="button" role="tab" aria-selected="true">
+                        <button class="wanted-group" data-wanted-group="sticker" type="button" role="tab" aria-selected="false">
                             <i data-lucide="layout-grid" class="inline-icon" aria-hidden="true"></i>
                             By sticker
                         </button>
-                        <button class="wanted-group" data-wanted-group="person" type="button" role="tab" aria-selected="false">
+                        <button class="wanted-group active" data-wanted-group="person" type="button" role="tab" aria-selected="true">
                             <i data-lucide="user-round" class="inline-icon" aria-hidden="true"></i>
                             By person
                         </button>
@@ -328,11 +331,18 @@
                 </div>
             </section>
 
-            <!-- ===== TRADES VIEW ===== -->
+            <!-- ===== TRADE: My trades sub-view ===== -->
             <section class="view" id="view-trades">
                 <div class="view-header">
-                    <h2 class="view-title">Trades</h2>
+                    <h2 class="view-title">Trade</h2>
                     <p class="view-subtitle">Your trade requests, in-progress trades, and completed history.</p>
+                </div>
+                <div class="trade-subview-tabs" role="tablist" aria-label="Trade sections">
+                    <button class="trade-subview-tab" data-trade-tab="discover" type="button" role="tab" aria-selected="false">Discover</button>
+                    <button class="trade-subview-tab active" data-trade-tab="mine" type="button" role="tab" aria-selected="true">
+                        My trades
+                        <span class="trade-subview-badge hidden" id="trade-mine-badge-2">0</span>
+                    </button>
                 </div>
                 <div id="pending-requests-section" class="pending-section hidden"></div>
                 <div id="completed-trades-section" class="pending-section hidden">

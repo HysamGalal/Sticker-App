@@ -972,13 +972,13 @@ async function refreshProfileDisplayName() {
    ============================================================ */
 
 const VIEW_TITLES = {
-    home: "Home",
-    album: "Album",
-    wanted: "Wanted",
-    trades: "Trades",
+    home:      "Home",
+    album:     "Album",
+    wanted:    "Trade",   // "Discover" sub-tab of the merged Trade section
+    trades:    "Trade",   // "My trades" sub-tab of the merged Trade section
     community: "Community",
-    activity: "Activity",
-    profile: "Profile",
+    activity:  "Activity",
+    profile:   "Profile",
 };
 
 function getCurrentViewFromUrl() {
@@ -997,9 +997,14 @@ function showView(viewKey, options = {}) {
     document.querySelectorAll(".view").forEach((el) => {
         el.classList.toggle("view-active", el.id === `view-${viewKey}`);
     });
-    // Active state on sidebar nav.
+    // Active state on sidebar nav. The single "Trade" sidebar entry
+    // (data-view="wanted") covers both the Discover (wanted) and My-trades
+    // (trades) sub-tabs.
     document.querySelectorAll(".nav-item").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.view === viewKey);
+        const dv = btn.dataset.view;
+        const matches = dv === viewKey
+            || (dv === "wanted" && viewKey === "trades");
+        btn.classList.toggle("active", matches);
     });
     // Top-bar title.
     const titleEl = document.getElementById("top-bar-title");
@@ -3501,14 +3506,20 @@ function countActionable() {
 }
 
 function updateFamilyBadge() {
-    const badge = document.getElementById("family-badge");
-    if (!badge) return;
     const count = countActionable();
-    if (count > 0) {
-        badge.textContent = count;
-        badge.classList.remove("hidden");
-    } else {
-        badge.classList.add("hidden");
+    const badges = [
+        document.getElementById("family-badge"),
+        document.getElementById("trade-mine-badge"),
+        document.getElementById("trade-mine-badge-2"),
+    ];
+    for (const badge of badges) {
+        if (!badge) continue;
+        if (count > 0) {
+            badge.textContent = count;
+            badge.classList.remove("hidden");
+        } else {
+            badge.classList.add("hidden");
+        }
     }
 }
 
@@ -3951,7 +3962,7 @@ function computeWantedMatches() {
 
 let wantedCache = { iNeed: [], othersNeed: [] };
 let wantedActiveTab = "i-need";
-let wantedGroupBy = "sticker"; // "sticker" | "person"
+let wantedGroupBy = "person"; // "sticker" | "person" — default to By person per UX brief
 
 // Walk the family snapshot once and return per-member match counts for the
 // active tab. iNeed: members who have stickers I'm missing. othersNeed:
@@ -4228,6 +4239,19 @@ function wireWantedControls() {
     const searchEl = document.getElementById("wanted-search");
     if (searchEl) {
         searchEl.addEventListener("input", (e) => applyWantedSearch(e.target.value));
+        // Default mode is "person", so the placeholder should reflect that.
+        if (wantedGroupBy === "person") {
+            searchEl.placeholder = "Filter by person name…";
+        }
+    }
+
+    // Trade sub-view tabs (Discover / My trades) — appear on both wanted + trades views.
+    for (const btn of document.querySelectorAll(".trade-subview-tab")) {
+        btn.addEventListener("click", () => {
+            const next = btn.dataset.tradeTab;
+            if (next === "discover") showView("wanted");
+            else if (next === "mine") showView("trades");
+        });
     }
 }
 

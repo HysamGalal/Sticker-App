@@ -4350,6 +4350,61 @@ input[type="search"].search-input,
 }
 
 /* ====================================================================
+   Trade sub-view tabs — Discover / My trades. Sits at the top of both
+   #view-wanted and #view-trades, since they're two halves of the same
+   sidebar section ("Trade").
+   ==================================================================== */
+.trade-subview-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--line);
+    margin: 0 0 24px;
+}
+.trade-subview-tab {
+    background: transparent;
+    border: 0;
+    padding: 12px 0;
+    margin-right: 28px;
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    letter-spacing: var(--display-letter);
+    position: relative;
+    transition: color 140ms ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.trade-subview-tab:hover { color: var(--ink-2); }
+.trade-subview-tab.active {
+    color: var(--ink);
+    font-weight: 600;
+}
+.trade-subview-tab.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: var(--accent);
+}
+.trade-subview-badge {
+    background: var(--warn);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 999px;
+    line-height: 1.4;
+    letter-spacing: 0.04em;
+}
+.trade-subview-badge.hidden { display: none; }
+
+/* ====================================================================
    PHASE 4 — Home / landing page
    ==================================================================== */
 
