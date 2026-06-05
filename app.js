@@ -4432,26 +4432,41 @@ async function refreshActivityView() {
    HOME / LANDING view (Phase 4 design migration)
    ============================================================ */
 
-// Pick visually-distinct sticker codes for the hero deco stack — uses real
-// teams from STICKER_DATA so the country flags come through.
-const HOME_HERO_TEAM_CODES = ["Argentina", "Brazil", "Japan"];
-
+// Pick 3 random real teams + a random sticker from each for the hero deco.
+// Re-shuffled every page load so the hero feels fresh.
 function renderHomeHeroStack() {
     const root = document.getElementById("home-hero-stack");
     if (!root) return;
     root.innerHTML = "";
 
-    // Build a sticker visual for each hero team — first sticker after the badge.
-    for (const teamName of HOME_HERO_TEAM_CODES) {
-        const section = STICKER_DATA.find((s) => s.team === teamName);
-        if (!section || !section.stickers || section.stickers.length < 2) continue;
-        // section.stickers[0] is the badge, [1] is the first player — use the team photo (badge) for the flag.
-        const [code, name] = section.stickers[1];
+    // Eligible teams: real country teams (skip Introduction / History / CC) that
+    // have a flag (iso code) AND at least 2 stickers so we can pick a non-badge.
+    const eligible = STICKER_DATA.filter((s) =>
+        s.team &&
+        isRealTeam(s.team) &&
+        Array.isArray(s.stickers) &&
+        s.stickers.length >= 2 &&
+        getCountryCode(s.team)
+    );
+    if (eligible.length === 0) return;
+
+    // Fisher-Yates shuffle, take first 3.
+    const pool = [...eligible];
+    for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    const picks = pool.slice(0, 3);
+
+    for (const section of picks) {
+        // Pick a random sticker from the team (skip the badge at index 0).
+        const idx = 1 + Math.floor(Math.random() * (section.stickers.length - 1));
+        const [code, name] = section.stickers[idx];
 
         const card = document.createElement("div");
         card.className = "home-hero-sticker";
 
-        const iso = getCountryCode(teamName);
+        const iso = getCountryCode(section.team);
         if (iso) {
             const flag = document.createElement("span");
             flag.className = `sticker-flag fi fi-${iso}`;
