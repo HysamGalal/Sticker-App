@@ -4154,3 +4154,197 @@ input[type="search"].search-input,
     padding: 4px 10px;
 }
 .tag.accent { background: var(--accent-soft); color: var(--accent); }
+
+/* ====================================================================
+   PHASE 3 — Final polish on auth, loading, modals, and details.
+   ==================================================================== */
+
+/* Auth screen background — editorial cream with subtle accent wash */
+.auth-screen {
+    background:
+        radial-gradient(circle at 25% 15%, color-mix(in oklch, var(--accent), transparent 86%), transparent 55%),
+        radial-gradient(circle at 80% 85%, color-mix(in oklch, var(--gold), transparent 88%), transparent 50%),
+        var(--bg);
+}
+
+.auth-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 32px;
+}
+.auth-card .auth-title {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 36px);
+    font-weight: 600;
+    letter-spacing: var(--display-letter);
+    line-height: 1.05;
+    margin-bottom: 8px;
+}
+.auth-card .auth-subtitle {
+    font-size: 15px;
+    color: var(--ink-2);
+    margin-bottom: 24px;
+    letter-spacing: 0;
+}
+.auth-card .auth-tabs {
+    margin-bottom: 20px;
+    width: 100%;
+    display: flex;
+}
+.auth-card .auth-tab {
+    flex: 1;
+    text-align: center;
+}
+.auth-field {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-weight: 500;
+    gap: 6px;
+}
+.auth-field input {
+    font-family: var(--font-text);
+    font-size: 14px;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--ink);
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line-2);
+    background: var(--surface);
+}
+.auth-field input::placeholder {
+    color: var(--muted);
+    text-transform: none;
+    letter-spacing: 0;
+}
+.auth-submit { margin-top: 8px; }
+.auth-error {
+    color: var(--warn);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+}
+.auth-info {
+    color: var(--muted);
+    font-size: 13px;
+}
+.auth-link {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: var(--radius);
+}
+.auth-link:hover { color: color-mix(in oklch, var(--accent), black 15%); }
+.auth-subtitle-inline {
+    font-size: 14px;
+    color: var(--ink-2);
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+/* Loading splash */
+.loading-screen {
+    background: color-mix(in srgb, var(--bg) 94%, transparent);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+.loading-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 24px;
+    box-shadow: var(--shadow-md);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-2);
+    letter-spacing: 0.04em;
+}
+
+/* Modal close × button (editorial) */
+.modal-close-x {
+    background: transparent;
+    border: 0;
+    color: var(--muted);
+    border-radius: var(--radius);
+    width: 32px;
+    height: 32px;
+}
+.modal-close-x:hover { background: var(--surface-2); color: var(--ink); }
+
+/* Reset / generic modal actions row */
+.modal-actions { gap: 8px; }
+
+/* Sticker badge cells / corner indicators tighter for the new sharp look */
+.sticker .checkmark,
+.sticker .badge {
+    top: 6px;
+    right: 6px;
+    border: 0;
+}
+
+/* Pending request items list (sticker rows inside trade cards) */
+.pending-request-items li {
+    font-size: 12px;
+    padding: 3px 0;
+}
+.pending-request-items .fi { width: 14px; height: auto; border-radius: 1px; }
+
+/* Sidebar mobile drawer width matches new sidebar */
+@media (max-width: 760px) {
+    .sidebar { width: 240px; padding: 20px 14px; }
+}
+
+/* Make sure the main-content container doesn't fight the editorial spacing */
+.main-content {
+    padding: 0 32px 48px;
+    background: var(--bg);
+}
+@media (max-width: 760px) {
+    .main-content { padding: 0 16px 32px; }
+}
+
+/* Notification dismiss button polish */
+.notification-dismiss {
+    color: var(--muted);
+    border-radius: var(--radius);
+}
+.notification-dismiss:hover { background: var(--surface-2); color: var(--ink); }
+
+/* Top-bar hamburger button */
+.hamburger {
+    color: var(--ink);
+    border-radius: var(--radius);
+}
+.hamburger:hover { background: var(--surface-2); }
+
+/* Family member's "you" marker subtler */
+.family-member-self .family-member-name::after {
+    content: " · you";
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+/* Family member chevron in dim muted */
+.family-member-arrow svg { color: var(--muted); }
+
+/* "Completed" trade section title — same editorial mono eyebrow */
+#completed-trades-section .pending-section-title {
+    color: var(--muted);
+}
+
+/* Completed trade card chevron / date */
+.completed-trade .trade-date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+}
