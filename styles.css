@@ -4411,12 +4411,85 @@ input[type="search"].search-input,
     font-weight: 500;
 }
 
-/* ----- Hero right column (formerly sticker stack, now the trade flow infographic) ----- */
+/* ----- Hero right column: small sticker deco on top + 4-step trade flow ----- */
 .hero-visual {
     position: relative;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 16px;
+}
+
+/* Decorative sticker fan, right-aligned above the trade flow */
+.hero-deco-stack {
+    position: relative;
+    align-self: flex-end;
+    width: 220px;
+    height: 160px;
+    pointer-events: none; /* purely decorative */
+    margin-right: -8px;
+}
+.hero-deco-stack .home-hero-sticker {
+    position: absolute;
+    width: 100px;
+    aspect-ratio: 5 / 7;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+.hero-deco-stack .home-hero-sticker .sticker-flag {
+    position: absolute;
+    inset: 0 0 26px 0;
+    background-size: cover;
+    background-position: center;
+}
+.hero-deco-stack .home-hero-sticker .sticker-flag.fi {
+    border-radius: 0;
+    box-shadow: none;
+}
+.hero-deco-stack .home-hero-sticker .sticker-code {
+    position: absolute;
+    top: 5px; left: 5px;
+    z-index: 2;
+    font-family: var(--font-mono);
+    font-size: 8px;
+    font-weight: 600;
+    background: var(--surface);
+    color: var(--ink-2);
+    padding: 1px 4px;
+    border-radius: 2px;
+    line-height: 1;
+}
+.hero-deco-stack .home-hero-sticker .sticker-name {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    z-index: 2;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    padding: 4px 6px 5px;
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.2;
+}
+.hero-deco-stack .home-hero-sticker:nth-child(1) {
+    right: 90px; top: 28px;
+    transform: rotate(-10deg);
+}
+.hero-deco-stack .home-hero-sticker:nth-child(2) {
+    right: 50px; top: 14px;
+    transform: rotate(-2deg);
+    z-index: 1;
+}
+.hero-deco-stack .home-hero-sticker:nth-child(3) {
+    right: 4px; top: 28px;
+    transform: rotate(8deg);
 }
 
 /* Vertical 4-step trade flow infographic */

@@ -4432,9 +4432,9 @@ async function refreshActivityView() {
    HOME / LANDING view (Phase 4 design migration)
    ============================================================ */
 
-// Pick 4 visually-distinct sticker codes for the hero stack — uses real teams
-// from STICKER_DATA so the country flags come through.
-const HOME_HERO_TEAM_CODES = ["Argentina", "Brazil", "Japan", "Mexico"];
+// Pick visually-distinct sticker codes for the hero deco stack — uses real
+// teams from STICKER_DATA so the country flags come through.
+const HOME_HERO_TEAM_CODES = ["Argentina", "Brazil", "Japan"];
 
 function renderHomeHeroStack() {
     const root = document.getElementById("home-hero-stack");
@@ -4600,6 +4600,7 @@ async function renderHomeActivity() {
 async function refreshHomeView() {
     if (!sb || !currentUser) return;
     renderHomeStats();
+    renderHomeHeroStack();
     renderHomeFeatured();
     // Activity is async — let it stream in.
     renderHomeActivity().catch((e) => console.warn(e));
