@@ -4411,13 +4411,78 @@ input[type="search"].search-input,
     font-weight: 500;
 }
 
-/* ----- Hero sticker stack ----- */
+/* ----- Hero right column (formerly sticker stack, now the trade flow infographic) ----- */
 .hero-visual {
     position: relative;
-    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Vertical 5-step trade flow infographic */
+.trade-flow {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 460px;
+    counter-reset: trade-flow;
+}
+.trade-flow-step {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 16px;
+    padding: 10px 0;
+    position: relative;
+    align-items: flex-start;
+}
+/* Vertical line connecting the numbers, behind them */
+.trade-flow-step:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: 17px;
+    top: 38px;
+    bottom: -10px;
+    width: 1.5px;
+    background: var(--line-2);
+    z-index: 0;
+}
+.trade-flow-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
     display: grid;
     place-items: center;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 1;
+    z-index: 1;
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 1px var(--line);
 }
+.trade-flow-body { padding-top: 6px; min-width: 0; }
+.trade-flow-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: var(--display-letter);
+    margin-bottom: 3px;
+    line-height: 1.25;
+}
+.trade-flow-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    letter-spacing: 0;
+}
+
+/* ----- Legacy sticker stack (kept in case we want to add it back small later) ----- */
 .hero-stack {
     position: relative;
     width: 78%;

@@ -4600,7 +4600,6 @@ async function renderHomeActivity() {
 async function refreshHomeView() {
     if (!sb || !currentUser) return;
     renderHomeStats();
-    renderHomeHeroStack();
     renderHomeFeatured();
     // Activity is async — let it stream in.
     renderHomeActivity().catch((e) => console.warn(e));

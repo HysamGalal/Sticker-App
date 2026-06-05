@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css">
-    <link rel="stylesheet" href="styles.css?v=12">
+    <link rel="stylesheet" href="styles.css?v=13">
     <meta name="theme-color" content="#FAF7F2" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#18171A" media="(prefers-color-scheme: dark)">
 </head>
@@ -198,8 +198,44 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="hero-visual" aria-hidden="true">
-                            <div class="hero-stack" id="home-hero-stack"></div>
+                        <div class="hero-visual">
+                            <ol class="trade-flow" aria-label="How a trade works">
+                                <li class="trade-flow-step">
+                                    <span class="trade-flow-num">1</span>
+                                    <div class="trade-flow-body">
+                                        <div class="trade-flow-title">Find a match</div>
+                                        <div class="trade-flow-desc">A collector who has the stickers you're missing — and wants yours back.</div>
+                                    </div>
+                                </li>
+                                <li class="trade-flow-step">
+                                    <span class="trade-flow-num">2</span>
+                                    <div class="trade-flow-body">
+                                        <div class="trade-flow-title">Propose a swap</div>
+                                        <div class="trade-flow-desc">Pick stickers for both sides of the trade. They review and accept.</div>
+                                    </div>
+                                </li>
+                                <li class="trade-flow-step">
+                                    <span class="trade-flow-num">3</span>
+                                    <div class="trade-flow-body">
+                                        <div class="trade-flow-title">Mail your envelope</div>
+                                        <div class="trade-flow-desc">Drop it in the post. Stickers travel in both directions.</div>
+                                    </div>
+                                </li>
+                                <li class="trade-flow-step">
+                                    <span class="trade-flow-num">4</span>
+                                    <div class="trade-flow-body">
+                                        <div class="trade-flow-title">Mark sent &amp; received</div>
+                                        <div class="trade-flow-desc">Each side taps the app when their envelope ships — and again when it arrives.</div>
+                                    </div>
+                                </li>
+                                <li class="trade-flow-step">
+                                    <span class="trade-flow-num">5</span>
+                                    <div class="trade-flow-body">
+                                        <div class="trade-flow-title">Album updates</div>
+                                        <div class="trade-flow-desc">Counts adjust automatically once both sides confirm. Trade complete.</div>
+                                    </div>
+                                </li>
+                            </ol>
                         </div>
                     </section>
 
@@ -212,72 +248,12 @@
                         <div class="featured-grid" id="home-featured"></div>
                     </section>
 
-                    <section class="section home-double">
-                        <div>
-                            <div class="h-eyebrow-row">
-                                <span class="eyebrow">Live activity</span>
-                                <span class="rule" aria-hidden="true"></span>
-                            </div>
-                            <div class="home-activity" id="home-activity"></div>
+                    <section class="section">
+                        <div class="h-eyebrow-row">
+                            <span class="eyebrow">Live activity</span>
+                            <span class="rule" aria-hidden="true"></span>
                         </div>
-                        <div>
-                            <div class="h-eyebrow-row">
-                                <span class="eyebrow">How it works</span>
-                                <span class="rule" aria-hidden="true"></span>
-                            </div>
-                            <div class="howto-list">
-                                <div class="howto-row">
-                                    <div class="howto-icon">
-                                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                                            <rect x="3.5" y="3.5" width="17" height="17" rx="3"/>
-                                            <path d="m8 12.5 3 3 5-6"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <div class="howto-title">Log what you have</div>
-                                        <div class="howto-desc">Tap stickers as you peel them. Duplicates count automatically.</div>
-                                    </div>
-                                </div>
-                                <div class="howto-row">
-                                    <div class="howto-icon">
-                                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                                            <circle cx="10" cy="10" r="6.5"/>
-                                            <path d="m15 15 5 5"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <div class="howto-title">Find a match</div>
-                                        <div class="howto-desc">We surface collectors whose missing list overlaps with your dupes.</div>
-                                    </div>
-                                </div>
-                                <div class="howto-row">
-                                    <div class="howto-icon">
-                                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M4 8h13l-3-3"/>
-                                            <path d="M20 16H7l3 3"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <div class="howto-title">Propose a swap</div>
-                                        <div class="howto-desc">Pick stickers for both sides of the trade. Both confirm. Ship and review.</div>
-                                    </div>
-                                </div>
-                                <div class="howto-row">
-                                    <div class="howto-icon">
-                                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M3 7.5 12 3l9 4.5"/>
-                                            <path d="M3 7.5v9L12 21l9-4.5v-9"/>
-                                            <path d="M3 7.5 12 12l9-4.5"/>
-                                            <path d="M12 12v9"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <div class="howto-title">Ship & confirm</div>
-                                        <div class="howto-desc">Mail your envelope, mark as sent, confirm on arrival. Album updates automatically.</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <div class="home-activity" id="home-activity"></div>
                     </section>
                 </div>
             </section>
