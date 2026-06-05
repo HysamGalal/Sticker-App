@@ -1018,8 +1018,10 @@ function showView(viewKey, options = {}) {
     if (viewKey === "profile") {
         refreshProfileDisplayName();
     } else if (viewKey === "community") {
-        // Always start on the member list (don't preserve trade-builder state).
+        // Always start on the member list — don't preserve trade-builder or
+        // community-detail state from a previous navigation.
         closeTradeView();
+        closeCommunityDetail();
         refreshCommunityView().catch((e) => console.warn(e));
     } else if (viewKey === "trades") {
         refreshTradesView().catch((e) => console.warn(e));
@@ -1183,6 +1185,7 @@ function handleSignedOut() {
     // Cleanup any embedded chat panels still mounted.
     unmountChatPanel(document.getElementById("community-chat-host"));
     unmountChatPanel(document.getElementById("group-chat-panel-host"));
+    unmountChatPanel(document.getElementById("community-detail-chat-host"));
     for (const host of document.querySelectorAll(".trade-card-chat-host")) {
         unmountChatPanel(host);
     }
@@ -1583,7 +1586,7 @@ function renderLabelManager() {
 
     const nameInput = document.createElement("input");
     nameInput.type = "text";
-    nameInput.placeholder = "New label name…";
+    nameInput.placeholder = "New community name…";
     nameInput.className = "label-create-input";
     nameInput.maxLength = 40;
     createRow.appendChild(nameInput);
@@ -1643,7 +1646,7 @@ function renderLabelManager() {
     if (labelsData.list.length === 0) {
         const empty = document.createElement("div");
         empty.className = "trade-empty";
-        empty.textContent = "No labels yet. Create your first one above.";
+        empty.textContent = "No communities yet. Create your first one above.";
         list.appendChild(empty);
     } else {
         for (const lbl of labelsData.list) {
@@ -2280,7 +2283,115 @@ function updateChatBadges() {
 
 let groupChatState = { labelId: null, channelId: null };
 
+/* ----- Community detail page (inline, replaces the modal group chat) ----- */
+let activeCommunityDetailId = null;
+
+async function openCommunityDetail(labelId) {
+    if (!sb || !currentUser) return;
+    if (!familyData) {
+        try { familyData = await fetchFamilyData(); } catch (e) { /* ignore */ }
+    }
+    activeCommunityDetailId = labelId;
+
+    // Toggle subviews — close any other inner state first.
+    closeTradeView();
+    document.getElementById("community-list-subview")?.classList.add("hidden");
+    document.getElementById("community-detail-subview")?.classList.remove("hidden");
+
+    // Set name + color dot in the header.
+    const lbl = labelsData.list.find((l) => l.id === labelId);
+    if (!lbl) {
+        closeCommunityDetail();
+        return;
+    }
+    const nameEl = document.getElementById("community-detail-name");
+    if (nameEl) nameEl.textContent = lbl.name;
+    const dot = document.getElementById("community-detail-dot");
+    if (dot) dot.style.setProperty("--label-color", lbl.color);
+
+    renderCommunityDetailMembers(labelId);
+
+    // Mount chat (get-or-create the label-scoped channel).
+    try {
+        const channelId = await getOrCreateLabelChannel(labelId);
+        const host = document.getElementById("community-detail-chat-host");
+        mountChatPanel(host, channelId, {
+            placeholder: `Message ${lbl.name}…`,
+        });
+        // Background-fetch channel cache so unread badge math stays accurate.
+        fetchMyChannels()
+            .then((cs) => { chatChannels = cs; updateChatBadges(); })
+            .catch(() => {});
+    } catch (e) {
+        alert("Couldn't open community chat: " + (e.message || e));
+        closeCommunityDetail();
+        return;
+    }
+    refreshIcons();
+}
+
+function closeCommunityDetail() {
+    activeCommunityDetailId = null;
+    document.getElementById("community-detail-subview")?.classList.add("hidden");
+    document.getElementById("community-list-subview")?.classList.remove("hidden");
+    unmountChatPanel(document.getElementById("community-detail-chat-host"));
+}
+
+function renderCommunityDetailMembers(labelId) {
+    const root = document.getElementById("community-detail-members");
+    const countEl = document.getElementById("community-detail-count");
+    if (!root) return;
+    root.innerHTML = "";
+
+    const profiles = (familyData?.profiles || [])
+        .filter((p) => p.id !== currentUser?.id)
+        .filter((p) => {
+            const labels = labelsData.byMember.get(p.id) || [];
+            return labels.some((l) => l.labelId === labelId);
+        })
+        .sort((a, b) => (a.display_name || "").localeCompare(b.display_name || ""));
+
+    if (countEl) {
+        countEl.textContent = `${profiles.length} member${profiles.length === 1 ? "" : "s"}`;
+    }
+    if (profiles.length === 0) {
+        root.innerHTML = `<div class="community-detail-member-empty">No members yet. Use <strong>Manage</strong> above to add some.</div>`;
+        return;
+    }
+    for (const p of profiles) {
+        const row = document.createElement("button");
+        row.type = "button";
+        row.className = "community-detail-member";
+        const avatar = document.createElement("div");
+        avatar.className = "community-detail-member-avatar";
+        avatar.textContent = (p.display_name || "?").trim().charAt(0).toUpperCase() || "?";
+        row.appendChild(avatar);
+        const name = document.createElement("span");
+        name.className = "community-detail-member-name";
+        name.textContent = p.display_name || "Unnamed user";
+        row.appendChild(name);
+        // Tap a member to jump straight into a trade with them.
+        row.addEventListener("click", () => {
+            const displayName = p.display_name || "Unnamed user";
+            closeCommunityDetail();
+            openTradeView(p.id, displayName);
+        });
+        root.appendChild(row);
+    }
+}
+
+function wireCommunityDetailControls() {
+    document.getElementById("community-detail-back")?.addEventListener("click", closeCommunityDetail);
+    document.getElementById("community-detail-manage")?.addEventListener("click", openLabelManager);
+}
+
 async function openLabelGroupChat(labelId) {
+    // Legacy modal entrypoint, kept in case something external still calls it.
+    // Routes to the new inline detail page.
+    return openCommunityDetail(labelId);
+}
+
+async function openLabelGroupChat_legacy(labelId) {
     if (!sb || !currentUser) return;
     if (!familyData) {
         try { familyData = await fetchFamilyData(); } catch (e) { /* ignore */ }
@@ -2454,7 +2565,7 @@ function renderWantedLabelBar() {
     const manage = document.createElement("button");
     manage.type = "button";
     manage.className = "label-manage-btn";
-    manage.innerHTML = '<i data-lucide="settings-2" class="inline-icon" aria-hidden="true"></i> Manage labels';
+    manage.innerHTML = '<i data-lucide="settings-2" class="inline-icon" aria-hidden="true"></i> Manage communities';
     manage.addEventListener("click", openLabelManager);
     root.appendChild(manage);
     refreshIcons();
@@ -2508,7 +2619,7 @@ function renderLabelFilterBar() {
     if (!root) return;
     root.innerHTML = "";
 
-    // "All" chip.
+    // "All" chip — keeps the "see all members" entrypoint for the list subview.
     const allChip = document.createElement("button");
     allChip.type = "button";
     allChip.className = "label-chip" + (activeLabelFilter === null ? " active" : "");
@@ -2520,36 +2631,23 @@ function renderLabelFilterBar() {
     });
     root.appendChild(allChip);
 
-    // One chip per label.
+    // One chip per community. Clicking now ENTERS the community detail page
+    // (where the chat lives) instead of just filtering the member list.
     for (const lbl of labelsData.list) {
         const chip = document.createElement("button");
         chip.type = "button";
-        chip.className = "label-chip label-chip-colored" + (activeLabelFilter === lbl.id ? " active" : "");
+        chip.className = "label-chip label-chip-colored";
         chip.style.setProperty("--label-color", lbl.color);
         chip.innerHTML = `<span class="label-chip-dot" aria-hidden="true"></span>${escapeHtml(lbl.name)}`;
-        chip.addEventListener("click", () => {
-            activeLabelFilter = lbl.id;
-            renderLabelFilterBar();
-            renderFamilyList();
-        });
+        chip.addEventListener("click", () => openCommunityDetail(lbl.id));
         root.appendChild(chip);
-    }
-
-    // "Chat with this group" — only when a specific label filter is active.
-    if (activeLabelFilter) {
-        const groupChatBtn = document.createElement("button");
-        groupChatBtn.type = "button";
-        groupChatBtn.className = "label-group-chat-btn";
-        groupChatBtn.innerHTML = '<i data-lucide="message-square" class="inline-icon" aria-hidden="true"></i> Chat with this group';
-        groupChatBtn.addEventListener("click", () => openLabelGroupChat(activeLabelFilter));
-        root.appendChild(groupChatBtn);
     }
 
     // Manage button — always last in the strip.
     const manage = document.createElement("button");
     manage.type = "button";
     manage.className = "label-manage-btn";
-    manage.innerHTML = '<i data-lucide="settings-2" class="inline-icon" aria-hidden="true"></i> Manage labels';
+    manage.innerHTML = '<i data-lucide="settings-2" class="inline-icon" aria-hidden="true"></i> Manage communities';
     manage.addEventListener("click", openLabelManager);
     root.appendChild(manage);
 
@@ -2592,7 +2690,7 @@ function renderFamilyList() {
 
     if (sorted.length === 0) {
         const msg = activeLabelFilter
-            ? "No members in this label yet. Use Manage labels to assign some."
+            ? "No members in this community yet. Use Manage communities to assign some."
             : "No family members found.";
         root.innerHTML = `<div class="trade-empty">${msg}</div>`;
         return;
@@ -4695,6 +4793,7 @@ async function init() {
     wireLabelManagerControls();
     wireGroupChatControls();
     wireHomeControls();
+    wireCommunityDetailControls();
 
     // Render all static lucide icons present in index.html.
     refreshIcons();
