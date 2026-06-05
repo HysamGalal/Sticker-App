@@ -1,76 +1,67 @@
+/* ====================================================================
+   EDITORIAL DESIGN SYSTEM
+   Imported from Claude Design — "editorial" theme.
+   Warm cream paper, near-black ink, forest-green accent, DM Sans + mono.
+   Sharp 2-6px radii. Minimal shadows. Light only.
+   ==================================================================== */
 :root {
-    /* ----- Warm-neutral palette (Anthropic / Apple / Airbnb hybrid) ----- */
-    --bg: #FAF7F2;              /* warm cream page background */
-    --card: #FFFFFF;            /* surface */
-    --surface-2: #F4F0E8;       /* hover & pill backgrounds */
-    --text: #1C1917;            /* near-black, slightly warm */
-    --text-muted: #57534E;      /* stone-600 */
-    --text-faint: #A8A29E;      /* stone-400 */
-    --border: #EAE4D7;          /* warm stone */
-    --border-strong: #D6CFC2;
+    /* ----- Surfaces ----- */
+    --bg:           #f3f0e8;
+    --bg-2:         #ebe6da;
+    --surface:      #fffdf8;
+    --surface-2:    #f8f4ea;
 
-    /* Brand accent — deep teal, calm and confident */
-    --accent: #0F766E;
-    --accent-hover: #115E59;
-    --accent-soft: rgba(15, 118, 110, 0.10);
-    --accent-ring: rgba(15, 118, 110, 0.22);
+    /* ----- Ink ----- */
+    --ink:          #161412;
+    --ink-2:        #3a342c;
+    --muted:        #7a7268;
+    --line:         rgba(22, 20, 18, 0.10);
+    --line-2:       rgba(22, 20, 18, 0.18);
 
-    /* Semantic colors */
-    --missing-bg: #F4F0E8;
-    --missing-text: #57534E;
-    --have: #15803D;
-    --have-dark: #14532D;
-    --dup: #0F766E;
-    --dup-dark: #115E59;
-    --extra: #B45309;
-    --extra-dark: #92400E;
-    --danger: #B91C1C;
-    --danger-bg: rgba(185, 28, 28, 0.08);
+    /* ----- Accent (forest green) + semantic ----- */
+    --accent:       oklch(0.42 0.13 145);
+    --accent-ink:   #ffffff;
+    --accent-soft:  oklch(0.92 0.04 145);
+    --accent-ring:  color-mix(in oklch, var(--accent), transparent 75%);
+    --warn:         oklch(0.55 0.18 30);
+    --gold:         oklch(0.72 0.13 80);
 
-    /* Shadows — softer and warmer than slate */
-    --shadow-sm: 0 1px 2px rgba(28, 25, 23, 0.04);
-    --shadow-md: 0 2px 8px rgba(28, 25, 23, 0.06), 0 1px 2px rgba(28, 25, 23, 0.04);
-    --shadow-lg: 0 12px 32px rgba(28, 25, 23, 0.08), 0 2px 6px rgba(28, 25, 23, 0.04);
+    /* ----- Fonts ----- */
+    --font-display: 'DM Sans', system-ui, -apple-system, sans-serif;
+    --font-text:    'DM Sans', system-ui, -apple-system, sans-serif;
+    --font-mono:    'JetBrains Mono', ui-monospace, monospace;
 
-    /* Radii */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    --radius-xl: 20px;
-}
+    /* ----- Radii / shadows / typography knobs ----- */
+    --radius:       2px;
+    --radius-lg:    6px;
+    --shadow-sm:    0 1px 0 rgba(0,0,0,0.04);
+    --shadow-md:    0 2px 12px rgba(22,20,18,0.06), 0 1px 2px rgba(22,20,18,0.04);
+    --shadow-lg:    0 12px 40px rgba(22,20,18,0.10), 0 2px 6px rgba(22,20,18,0.06);
+    --display-letter: -0.025em;
+    --text-letter:    0;
 
-/* ----- Dark mode (auto-follows OS preference) ----- */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg: #16151A;
-        --card: #1F1D22;
-        --surface-2: #28252B;
-        --text: #F4EFE6;
-        --text-muted: #B8B2A8;
-        --text-faint: #807A70;
-        --border: #322E36;
-        --border-strong: #45404A;
-
-        --accent: #2DD4BF;
-        --accent-hover: #5EEAD4;
-        --accent-soft: rgba(45, 212, 191, 0.14);
-        --accent-ring: rgba(45, 212, 191, 0.30);
-
-        --missing-bg: #28252B;
-        --missing-text: #B8B2A8;
-        --have: #34D399;
-        --have-dark: #6EE7B7;
-        --dup: #2DD4BF;
-        --dup-dark: #5EEAD4;
-        --extra: #FBBF24;
-        --extra-dark: #FCD34D;
-        --danger: #F87171;
-        --danger-bg: rgba(248, 113, 113, 0.14);
-
-        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.30);
-        --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.40), 0 1px 2px rgba(0, 0, 0, 0.30);
-        --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.35);
-    }
+    /* ----- Legacy aliases (kept so existing CSS rules keep compiling
+       while we migrate component-by-component) ----- */
+    --card:           var(--surface);
+    --text:           var(--ink);
+    --text-muted:     var(--muted);
+    --text-faint:     color-mix(in oklch, var(--muted), transparent 35%);
+    --border:         var(--line);
+    --border-strong:  var(--line-2);
+    --accent-hover:   color-mix(in oklch, var(--accent), black 15%);
+    --missing-bg:     var(--bg-2);
+    --missing-text:   var(--muted);
+    --have:           var(--accent);
+    --have-dark:      color-mix(in oklch, var(--accent), black 20%);
+    --dup:            var(--accent);
+    --dup-dark:       color-mix(in oklch, var(--accent), black 20%);
+    --extra:          var(--gold);
+    --extra-dark:     color-mix(in oklch, var(--gold), black 20%);
+    --danger:         var(--warn);
+    --danger-bg:      color-mix(in oklch, var(--warn), transparent 88%);
+    --radius-sm:      var(--radius);
+    --radius-md:      var(--radius-lg);
+    --radius-xl:      var(--radius-lg);
 }
 
 /* ----- Lucide icon sizing & color inheritance --------------------------- */
@@ -110,24 +101,69 @@ html {
 }
 
 body {
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--font-text);
     background: var(--bg);
-    color: var(--text);
+    color: var(--ink);
     min-height: 100vh;
+    font-size: 15px;
     line-height: 1.5;
-    letter-spacing: -0.005em;
+    letter-spacing: var(--text-letter);
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    font-feature-settings: "cv11", "ss01", "ss03";
+    text-rendering: optimizeLegibility;
 }
+button, input, select, textarea { font-family: inherit; color: inherit; }
 
-/* Display treatment for view headers — same Inter, tightened and heavier. */
+/* ----- Editorial utility classes (from the design system) ----- */
+.mono       { font-family: var(--font-mono); }
+.display    { font-family: var(--font-display); letter-spacing: var(--display-letter); }
+.tabular    { font-variant-numeric: tabular-nums; }
+
+.eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+.h-display {
+    font-family: var(--font-display);
+    font-size: clamp(48px, 6.5vw, 88px);
+    font-weight: 600;
+    line-height: 0.98;
+    letter-spacing: var(--display-letter);
+    margin: 0;
+    color: var(--ink);
+    text-wrap: balance;
+}
+.h-display em { font-style: normal; color: var(--accent); }
+.h-section {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 3vw, 40px);
+    font-weight: 600;
+    margin: 0 0 24px;
+    letter-spacing: var(--display-letter);
+}
+.h-card {
+    font-family: var(--font-display);
+    font-size: 22px;
+    margin: 0 0 8px;
+    font-weight: 600;
+    letter-spacing: var(--display-letter);
+}
+.h-eyebrow-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px;
+}
+.h-eyebrow-row .rule { flex: 1; height: 1px; background: var(--line); }
+.body-lg { font-size: 18px; line-height: 1.55; color: var(--ink-2); }
+
+/* Bridge the old view-title/profile-title/auth-title to the new h-display style */
 .view-title,
 .profile-title,
 .auth-title {
-    font-family: inherit;
-    font-weight: 700;
-    letter-spacing: -0.025em;
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: var(--display-letter);
     line-height: 1.05;
 }
 
@@ -137,7 +173,7 @@ body {
 
 .app-shell {
     display: grid;
-    grid-template-columns: 220px 1fr;
+    grid-template-columns: 240px 1fr;
     grid-template-rows: auto 1fr;
     grid-template-areas:
         "sidebar topbar"
@@ -194,14 +230,15 @@ body {
     display: inline-block;
 }
 
+/* ----- Sidebar (editorial: 240px sticky, logo block, flat links, progress widget) ----- */
 .sidebar {
     grid-area: sidebar;
-    background: var(--card);
-    border-right: 1px solid var(--border);
-    padding: 1rem 0.65rem;
+    background: var(--bg);
+    border-right: 1px solid var(--line);
+    padding: 20px 14px;
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: 18px;
     position: sticky;
     top: 0;
     height: 100vh;
@@ -212,57 +249,64 @@ body {
 .sidebar-brand {
     display: flex;
     align-items: center;
-    gap: 0.55rem;
-    padding: 0.25rem 0.65rem 1.5rem;
+    gap: 10px;
+    padding: 4px 10px 14px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 4px;
 }
 .sidebar-brand .brand-mark {
-    font-family: inherit;
-    font-size: 1.15rem;
-    font-weight: 800;
-    line-height: 1;
-    color: var(--accent);
-    letter-spacing: -0.04em;
-    padding: 0.3rem 0.4rem;
-    background: var(--accent-soft);
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
     border-radius: 6px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    display: grid;
+    place-items: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0;
+    padding: 0;
 }
 .sidebar-brand .brand-text {
-    font-size: 0.8rem;
+    font-family: var(--font-display);
+    font-size: 15px;
     font-weight: 600;
-    color: var(--text);
-    letter-spacing: -0.005em;
-    line-height: 1.2;
+    letter-spacing: var(--display-letter);
+    line-height: 1.15;
+    color: var(--ink);
 }
 
 .sidebar-nav {
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
+    gap: 2px;
 }
 
 .nav-item {
     display: flex;
     align-items: center;
-    gap: 0.7rem;
-    padding: 0.55rem 0.7rem;
+    gap: 12px;
+    padding: 9px 12px;
     background: transparent;
     border: 0;
-    border-radius: 10px;
-    color: var(--text-muted);
+    border-radius: var(--radius);
+    color: var(--ink-2);
     font-family: inherit;
-    font-size: 0.875rem;
+    font-size: 14px;
     font-weight: 500;
     text-align: left;
     cursor: pointer;
     width: 100%;
-    transition: background 0.12s ease, color 0.12s ease;
+    transition: background 120ms ease, color 120ms ease;
     position: relative;
-    letter-spacing: -0.005em;
+    letter-spacing: 0;
 }
 
 .nav-item:hover {
     background: var(--surface-2);
-    color: var(--text);
+    color: var(--ink);
 }
 
 .nav-item.active {
@@ -270,39 +314,72 @@ body {
     color: var(--accent);
     font-weight: 600;
 }
-.nav-item.active .nav-icon {
-    color: var(--accent);
-}
+.nav-item.active .nav-icon { color: var(--accent); }
 
 .nav-icon {
-    line-height: 1;
-    color: var(--text-faint);
-    transition: color 0.12s ease;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    color: var(--ink-2);
+    transition: color 120ms ease;
 }
-.nav-item:hover .nav-icon { color: var(--text-muted); }
+.nav-item:hover .nav-icon { color: var(--ink); }
 
-.nav-label {
-    flex: 1;
-}
+.nav-label { flex: 1; }
 
 .nav-badge {
     margin-left: auto;
-    background: var(--danger);
+    background: var(--warn);
     color: #ffffff;
-    font-size: 0.65rem;
+    font-family: var(--font-mono);
+    font-size: 10px;
     font-weight: 700;
-    padding: 0.1rem 0.45rem;
+    padding: 1px 6px;
     border-radius: 999px;
     min-width: 1.1em;
     text-align: center;
-    line-height: 1.2;
+    line-height: 1.4;
     animation: badge-pulse 2.4s ease-in-out infinite;
 }
 
 .nav-item.active .nav-badge {
-    background: var(--danger);
+    background: var(--warn);
     color: #ffffff;
     animation: none;
+}
+
+/* Sidebar foot: progress widget pinned to the bottom */
+.sidebar-foot { margin-top: auto; }
+.sidebar-progress {
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+.sidebar-progress-meta {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.04em;
+}
+.sidebar-progress-bar {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--bg-2);
+    overflow: hidden;
+}
+.sidebar-progress-bar > i {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 240ms ease;
+    width: 0%;
 }
 
 .nav-badge.hidden {
@@ -1477,33 +1554,29 @@ body {
 }
 
 /* ============================================================
-   Album view tweaks (counter/filter no longer in a sticky page-header)
+   Album view — editorial design
+   Header: completion stats inline at the top, filters as segmented control,
+   no card wrapper / no gradient stripe.
    ============================================================ */
 .album-header {
-    background: var(--card);
-    border-radius: var(--radius-lg);
-    padding: 1rem 1.35rem 1.05rem;
-    box-shadow: var(--shadow-md);
-    border: 1px solid var(--border);
-    position: sticky;
-    top: 0.5rem;
-    z-index: 10;
-    overflow: hidden;
-    margin-bottom: 1.5rem;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+    padding: 32px 0 24px;
+    box-shadow: none;
+    position: static;
+    overflow: visible;
+    margin: 0 0 8px;
     max-width: 1600px;
     margin-left: auto;
     margin-right: auto;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 32px;
 }
-
-.album-header::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--have), var(--accent), var(--extra));
-}
+.album-header::before { content: none; }
 
 #sections {
     max-width: 1600px;
@@ -1569,143 +1642,120 @@ body {
     background: linear-gradient(90deg, var(--have), var(--accent), var(--extra));
 }
 
-h1 {
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    letter-spacing: 0.06em;
+/* "My collection · World Cup 2026" eyebrow style — keep the legacy <h1>
+   inside .counter / .album-header rendered like an .eyebrow. */
+.album-header h1,
+.counter h1 {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    margin-bottom: 0.35rem;
+    margin-bottom: 12px;
 }
 
+/* Massive tabular completion number, baseline-aligned with /total + accent % pill */
 .counter-main {
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
-    gap: 0.3rem 0.55rem;
-    font-size: 1.75rem;
-    font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    color: var(--text);
+    gap: 12px;
+    font-family: var(--font-display);
+    font-size: 64px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: var(--display-letter);
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
 }
-
-.counter-main #count-owned {
-    color: var(--have);
-}
-
+.counter-main #count-owned { color: var(--ink); }
+.counter-main #count-all   { color: var(--muted); font-size: 28px; }
 .counter-label {
-    font-weight: 500;
-    color: var(--text-muted);
-    font-size: 1.05rem;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: var(--display-letter);
 }
-
 .counter-pct {
-    margin-left: auto;
-    padding: 0.18rem 0.65rem;
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: #ffffff;
-    background: var(--have);
-    border-radius: 999px;
-    box-shadow: var(--shadow-sm);
+    margin-left: 16px;
+    padding: 6px 12px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: var(--radius);
+    box-shadow: none;
+    font-variant-numeric: tabular-nums;
 }
 
 .counter-sub {
-    margin-top: 0.2rem;
-    font-size: 0.82rem;
-    color: var(--text-muted);
-    font-weight: 500;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 400;
 }
 
-.progress-bar {
-    margin-top: 0.5rem;
-    height: 5px;
-    background: var(--border);
-    border-radius: 3px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, var(--have), #4ade80);
-    border-radius: 4px;
-    transition: width 0.3s ease;
-}
+/* Hide the big page progress bar — the sidebar widget already shows this */
+.progress-bar,
+.progress-fill { display: none; }
 
 .hint {
-    color: var(--text-faint);
-    font-size: 0.72rem;
-    margin-top: 0.55rem;
-    line-height: 1.35;
+    color: var(--muted);
+    font-size: 12px;
+    font-family: var(--font-mono);
+    margin-top: 10px;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
 }
 
-/* ----- Filter bar ----- */
-
+/* ----- Filter bar (segmented control, top-right aligned with album-head) ----- */
 .filter-bar {
-    margin-top: 0.65rem;
-    padding-top: 0.65rem;
-    border-top: 1px solid var(--border);
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
     display: flex;
-    gap: 0.6rem;
+    gap: 12px;
     align-items: center;
     flex-wrap: wrap;
 }
 
 .filter-buttons {
     display: flex;
-    gap: 0.4rem;
-    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px;
+    background: var(--surface-2);
+    border-radius: var(--radius);
 }
 
 .filter-btn {
-    padding: 0.35rem 0.85rem;
+    padding: 8px 16px;
     font-family: inherit;
-    font-size: 0.8rem;
+    font-size: 13px;
     font-weight: 500;
-    color: var(--text-muted);
+    color: var(--ink-2);
     background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 999px;
+    border: 0;
+    border-radius: calc(var(--radius) - 1px);
     cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
-    letter-spacing: -0.005em;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.08s ease;
+    letter-spacing: 0;
 }
-
-.filter-btn:hover {
-    background: var(--surface-2);
-    color: var(--text);
-    border-color: var(--border-strong);
-}
-
-.filter-btn:active {
-    transform: scale(0.97);
-}
-
-.filter-btn.active {
-    background: var(--text);
-    color: var(--card);
-    border-color: var(--text);
+.filter-btn:hover     { background: rgba(0,0,0,0.04); color: var(--ink); }
+.filter-btn:active    { transform: scale(0.97); }
+.filter-btn.active    {
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow-sm);
     font-weight: 600;
 }
-
-.filter-btn.active[data-filter="missing"] {
-    background: var(--surface-2);
-    color: var(--text);
-    border-color: var(--border-strong);
-}
-
-.filter-btn.active[data-filter="collected"] {
-    background: var(--have);
-    border-color: var(--have);
-    color: #ffffff;
-}
-
+.filter-btn.active[data-filter="missing"],
+.filter-btn.active[data-filter="collected"],
 .filter-btn.active[data-filter="duplicates"] {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #ffffff;
+    background: var(--surface);
+    color: var(--ink);
+    border: 0;
 }
 
 .search-input {
@@ -1713,22 +1763,18 @@ h1 {
     min-width: 160px;
     max-width: 280px;
     margin-left: auto;
-    padding: 0.45rem 0.95rem;
+    padding: 8px 14px;
     font-family: inherit;
-    font-size: 0.85rem;
-    color: var(--text);
-    background: var(--card);
-    border: 1px solid var(--border-strong);
-    border-radius: 999px;
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius);
     outline: none;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
-    letter-spacing: -0.005em;
+    letter-spacing: 0;
 }
-
-.search-input::placeholder {
-    color: var(--text-faint);
-}
-
+.search-input::placeholder { color: var(--muted); }
 .search-input:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-ring);
@@ -2867,64 +2913,64 @@ h1 {
     flex-wrap: wrap;
 }
 
+/* ----- Buttons (editorial: sharp, flat, accent-green primary) ----- */
 .btn {
-    padding: 0.6rem 1.1rem;
-    font-family: inherit;
-    font-size: 0.9rem;
-    font-weight: 500;
-    border-radius: 10px;
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
+    gap: 8px;
+    padding: 12px 22px;
+    background: var(--ink);
+    color: var(--bg);
+    border: 0;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0;
     line-height: 1.2;
-    letter-spacing: -0.005em;
+    cursor: pointer;
+    transition: transform 120ms ease, opacity 120ms ease, background 120ms ease;
 }
-
-.btn:active {
-    transform: scale(0.98);
-}
-
-.btn.hidden {
-    display: none !important;
-}
-
+.btn:hover  { transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn.hidden { display: none !important; }
 .btn:focus-visible {
     outline: 2px solid var(--accent-ring);
     outline-offset: 2px;
 }
 
-.btn-secondary {
-    background: var(--card);
-    color: var(--text);
-    border-color: var(--border-strong);
-    box-shadow: var(--shadow-sm);
+.btn-primary,
+.btn.primary {
+    background: var(--accent);
+    color: var(--accent-ink);
 }
+.btn-primary:hover,
+.btn.primary:hover { background: color-mix(in oklch, var(--accent), black 8%); }
 
-.btn-secondary:hover {
-    background: var(--surface-2);
-    border-color: var(--text-faint);
+.btn-secondary,
+.btn.ghost {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line-2);
 }
+.btn-secondary:hover,
+.btn.ghost:hover { background: var(--surface-2); }
 
 .btn-danger {
     background: transparent;
-    color: var(--danger);
-    border-color: var(--border-strong);
-    box-shadow: var(--shadow-sm);
+    color: var(--warn);
+    border: 1px solid var(--line-2);
 }
-
 .btn-danger:hover {
-    background: var(--danger-bg);
-    border-color: var(--danger);
-    color: var(--danger);
+    background: color-mix(in oklch, var(--warn), transparent 92%);
+    border-color: var(--warn);
 }
+.btn-danger:focus-visible { outline-color: var(--warn); }
 
-.btn-danger:focus-visible {
-    outline-color: var(--danger);
-}
+.btn-small, .btn.sm { padding: 8px 14px; font-size: 13px; }
+.btn.lg            { padding: 16px 28px; font-size: 15px; }
 
 /* ----- Modal ----- */
 
@@ -3021,34 +3067,36 @@ main {
 .group-header:first-child { margin-top: 1.5rem; }
 
 .group-title {
-    font-family: inherit;
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--text);
-    margin-bottom: 0.85rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border-strong);
+    font-family: var(--font-display);
+    font-size: clamp(28px, 3vw, 40px);
+    font-weight: 600;
+    letter-spacing: var(--display-letter);
+    color: var(--ink);
+    margin-bottom: 16px;
+    padding-bottom: 0;
+    border-bottom: 0;
 }
 
 .group-teams {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem 0.65rem;
+    gap: 8px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
 }
 
 .group-team {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.4rem 0.85rem;
-    background: var(--card);
-    border: 1px solid var(--border);
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--surface-2);
+    border: 0;
     border-radius: 999px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text);
-    box-shadow: var(--shadow-sm);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-2);
+    box-shadow: none;
 }
 
 .group-flag {
@@ -3061,238 +3109,287 @@ main {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
-/* ----- Team section card ----- */
+/* ============================================================
+   Team section — editorial: flat, no card, mono code + display name
+   ============================================================ */
 
 .team-section {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    margin: 0 0 1.75rem;
-    box-shadow: var(--shadow-md);
-    overflow: hidden;
-    transition: box-shadow 0.15s ease;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+    margin: 0;
+    box-shadow: none;
+    overflow: visible;
+    padding: 32px 0;
+    transition: none;
 }
-.team-section:hover { box-shadow: var(--shadow-lg); }
+.team-section:last-child { border-bottom: 0; }
+.team-section:hover { box-shadow: none; }
 
-/* Header band - solid team primary color */
+/* The old "team-band" wrapper becomes the editorial team-section-head */
 .team-band {
-    position: relative;
-    padding: 0.45rem 0.9rem;
+    position: static;
+    padding: 0 0 20px;
+    background: transparent !important;
     display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    color: #ffffff;
+    align-items: baseline;
+    gap: 16px;
+    color: var(--ink);
 }
+.team-band::after { content: none; }
 
-.team-band::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.28));
-    pointer-events: none;
-}
-
-.team-band > * {
-    position: relative;
-    z-index: 1;
-}
-
+/* Flag becomes a small chip on the left */
 .team-band-flag {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     line-height: 1;
     flex-shrink: 0;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+    filter: none;
 }
-
-/* Rectangular flag-icons variant: subtle rounded corners + box shadow
-   instead of emoji drop-shadow */
 .team-band-flag.fi {
     border-radius: 2px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
-    filter: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    width: 22px;
+    height: auto;
 }
 
 .team-band-text {
     flex: 1;
     min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
+/* The team name → display 28px */
 .team-band-name {
-    font-size: 0.95rem;
-    font-weight: 800;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
-    line-height: 1.1;
-    color: #ffffff;
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: var(--display-letter);
+    text-transform: none;
+    text-shadow: none;
+    line-height: 1;
+    color: var(--ink);
 }
 
+/* Federation/group code → mono eyebrow */
 .team-band-federation {
-    margin-top: 0.05rem;
-    font-size: 0.62rem;
+    margin-top: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.88);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    letter-spacing: 0.02em;
+    color: var(--muted);
+    text-shadow: none;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    order: -1; /* show before the name */
 }
 
 .team-band-progress {
-    color: #ffffff;
-    font-size: 0.7rem;
+    margin-left: auto;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
     font-weight: 500;
     white-space: nowrap;
-    background: rgba(0, 0, 0, 0.32);
-    padding: 0.18rem 0.55rem;
-    border-radius: 999px;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
 }
+.team-band-progress strong { color: var(--ink); font-weight: 600; }
 
-.team-band-progress strong {
-    font-weight: 700;
-}
-
-/* ----- Album-style 4-column grid ----- */
+/* ============================================================
+   Sticker grid — 10 cols editorial. Stickers: 5:7 sharp.
+   The team's primary color stays as a subtle photo-area tint.
+   ============================================================ */
 
 .album-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
-    gap: 8px;
-    padding: 1rem 1.1rem 1.1rem;
-    background: var(--card);
+    grid-template-columns: repeat(10, 1fr);
+    gap: 10px;
+    padding: 0;
+    background: transparent;
 }
 
-/* Sticker cell - vertical layout: code on top, player name below */
 .sticker {
-    aspect-ratio: 3 / 4;
-    background: var(--team-primary, #475569);
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    border-radius: 10px;
-    color: #ffffff;
+    aspect-ratio: 5 / 7;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--ink);
     font-family: inherit;
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    text-align: center;
+    align-items: stretch;
+    justify-content: stretch;
+    gap: 0;
+    text-align: left;
     position: relative;
-    padding: 10px 6px;
-    overflow: visible;
+    padding: 0;
+    overflow: hidden;
     box-shadow: var(--shadow-sm);
-    transition: transform 0.12s ease, box-shadow 0.15s ease, opacity 0.15s ease;
-    opacity: 0.42;
+    transition: transform 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+    opacity: 1;
     user-select: none;
 }
 
-/* Subtle vertical sheen */
+/* Hatch overlay on the photo area, using the team-primary color as a tint */
 .sticker::before {
     content: "";
     position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.18) 100%);
+    top: 0; left: 0; right: 0;
+    bottom: 28px; /* leaves room for the foot */
+    background:
+        repeating-linear-gradient(135deg,
+            rgba(0,0,0,0.05) 0 4px,
+            transparent 4px 8px),
+        color-mix(in srgb, var(--team-primary, #d8d2c4) 28%, var(--bg-2));
     pointer-events: none;
-    border-radius: inherit;
+    z-index: 0;
 }
 
 .sticker:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
-    opacity: 0.78;
-}
-
-.sticker:active {
-    transform: translateY(0);
-}
-
-.sticker.have {
     opacity: 1;
 }
 
-.sticker.have:hover {
-    opacity: 1;
-    box-shadow: var(--shadow-lg);
+.sticker:active { transform: translateY(0); }
+
+.sticker.have { opacity: 1; }
+.sticker.have::before {
+    background:
+        repeating-linear-gradient(135deg,
+            rgba(0,0,0,0.04) 0 4px,
+            transparent 4px 8px),
+        color-mix(in srgb, var(--team-primary, #d8d2c4) 55%, var(--surface));
 }
 
+/* Missing: dashed border, low opacity, hatched bg-2 */
+.sticker:not(.have) {
+    background: var(--bg-2);
+    border-style: dashed;
+    border-color: var(--line-2);
+    opacity: 0.55;
+}
+.sticker:not(.have):hover { opacity: 1; }
+.sticker:not(.have)::before {
+    background:
+        repeating-linear-gradient(135deg,
+            rgba(0,0,0,0.06) 0 2px,
+            transparent 2px 6px);
+}
+
+/* Sticker code — mono badge top-left */
 .sticker-code {
-    position: relative;
-    z-index: 1;
-    font-size: 0.78rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-    color: #ffffff;
+    position: absolute;
+    top: 6px; left: 6px;
+    z-index: 2;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--ink-2);
+    background: var(--surface);
+    padding: 2px 5px;
+    border-radius: 3px;
+    text-shadow: none;
     line-height: 1;
 }
-
-.sticker-name {
-    position: relative;
-    z-index: 1;
-    font-size: 0.58rem;
-    font-weight: 500;
-    line-height: 1.15;
-    color: #ffffff;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55);
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    padding: 0 2px;
-    word-break: break-word;
-    max-width: 100%;
+.sticker:not(.have) .sticker-code {
+    background: transparent;
+    color: var(--muted);
 }
 
-/* Sticker #1 - the team badge slot. Thicker gold border. */
+/* Sticker name — foot strip at the bottom */
+.sticker-name {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    z-index: 2;
+    padding: 6px 8px 7px;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    font-family: var(--font-text);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--ink);
+    text-shadow: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+    padding-bottom: 7px;
+    max-width: none;
+    -webkit-line-clamp: unset;
+    display: block;
+    word-break: normal;
+}
+.sticker:not(.have) .sticker-name {
+    background: transparent;
+    border-top: 0;
+    color: var(--muted);
+}
+
+/* Badge slot (#1) — gold-tinted instead of border */
 .sticker.badge-cell {
-    border: 3px solid #fcd34d;
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--gold);
+    box-shadow: var(--shadow-sm);
 }
 .sticker.badge-cell .sticker-code {
-    font-size: 0.82rem;
+    background: var(--gold);
+    color: #fff;
 }
 
-/* Sticker #13 - the country-names / team-photo slot. Dashed white outline.
-   Landscape orientation at the SAME area as portrait cells: width = (4/3) × col,
-   height = col. Achieved by spanning 2 grid tracks and constraining width via
-   calc so it's exactly 4/3 of one column (the gap term backs out the inter-track gap). */
+/* Country/team-photo cell (#13) — landscape, span 2 cols */
 .sticker.country-cell {
     grid-column: span 2;
-    aspect-ratio: 4 / 3;
-    width: calc((100% - 8px) * 2 / 3);
-    align-self: start;
-    justify-self: center;
-    border: 2px dashed rgba(255, 255, 255, 0.95);
+    aspect-ratio: 7 / 5;
+    width: auto;
+    align-self: stretch;
+    justify-self: stretch;
+    border-style: dashed;
 }
 
-/* Corner state indicators */
+/* Corner state indicators — minimal mono chips */
 .sticker .checkmark,
 .sticker .badge {
     position: absolute;
-    top: -6px;
-    right: -6px;
+    top: 6px;
+    right: 6px;
     z-index: 3;
-    min-width: 22px;
-    height: 22px;
-    border-radius: 999px;
-    padding: 0 6px;
+    min-width: 20px;
+    height: 18px;
+    border-radius: 3px;
+    padding: 0 5px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.72rem;
-    font-weight: 800;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 700;
     line-height: 1;
-    border: 2px solid var(--card);
-    box-shadow: var(--shadow-sm);
+    border: 0;
+    box-shadow: none;
+    letter-spacing: 0.02em;
 }
 
 .sticker .checkmark {
-    background: var(--have-dark);
-    color: #ffffff;
-    font-size: 0.85rem;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
 }
 
 .sticker .badge {
-    background: var(--extra);
-    color: #1a1a1a;
+    background: var(--accent);
+    color: var(--accent-ink);
 }
 
 /* ----- Responsive ----- */

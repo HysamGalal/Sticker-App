@@ -176,6 +176,14 @@ function updateAllStats() {
     document.getElementById("count-dups").textContent =
         `${totalExtras} duplicate${totalExtras === 1 ? "" : "s"}`;
     document.getElementById("progress-fill").style.width = `${pct}%`;
+
+    // Sidebar progress widget (editorial design)
+    const sbCount = document.getElementById("sidebar-progress-count");
+    const sbPct   = document.getElementById("sidebar-progress-pct");
+    const sbFill  = document.getElementById("sidebar-progress-fill");
+    if (sbCount) sbCount.textContent = `${totalOwned}/${totalStickers}`;
+    if (sbPct)   sbPct.textContent   = `${pctDisplay}%`;
+    if (sbFill)  sbFill.style.width  = `${pct}%`;
 }
 
 function stickerMatchesStatus(count) {

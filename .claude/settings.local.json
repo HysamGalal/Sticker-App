@@ -13,7 +13,11 @@
       "Bash(git stash *)",
       "PowerShell(Rename-Item -Path \"Design Looks\\\\Gorup A.pdf\" -NewName \"Group A.pdf\")",
       "mcp__Claude_Preview__preview_start",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "WebFetch(domain:claude.ai)",
+      "Bash(ls \"C:\\\\Users\\\\hysam\\\\Downloads\\\\\" 2>&1 | head -40)",
+      "Bash(grep -iE \"\\\\.\\(jsx|css|html\\)$\")",
+      "Bash(mkdir -p \"/c/Users/hysam/OneDrive/Desktop/Sticker-App/new-design\" && cp \"/c/Users/hysam/Downloads/Album 26.html\" \"/c/Users/hysam/Downloads/styles.css\" \"/c/Users/hysam/Downloads/app.jsx\" \"/c/Users/hysam/Downloads/components.jsx\" \"/c/Users/hysam/Downloads/screens.jsx\" \"/c/Users/hysam/Downloads/trade.jsx\" \"/c/Users/hysam/Downloads/data.jsx\" \"/c/Users/hysam/Downloads/tweaks-panel.jsx\" \"/c/Users/hysam/OneDrive/Desktop/Sticker-App/new-design/\" && ls \"/c/Users/hysam/OneDrive/Desktop/Sticker-App/new-design/\")"
     ]
   }
 }
