@@ -3420,3 +3420,737 @@ main {
     .filter-btn { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
     .search-input { margin-left: 0; max-width: none; width: 100%; }
 }
+
+/* ====================================================================
+   PHASE 2 — Editorial overrides for Wanted, Trades, Community.
+   Source-order wins: these rules end the stylesheet and override the
+   earlier component styles to align with the editorial design language.
+   ==================================================================== */
+
+/* --- View headers (used in every secondary view) --- */
+.view-header {
+    margin: 0 auto 24px;
+    padding: 32px 0 0;
+    max-width: 1600px;
+}
+.view-title,
+.profile-title,
+.auth-title {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 3vw, 40px);
+    font-weight: 600;
+    letter-spacing: var(--display-letter);
+    color: var(--ink);
+    margin: 0 0 8px;
+    line-height: 1.05;
+}
+.view-subtitle {
+    font-family: var(--font-text);
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    max-width: 60ch;
+    font-weight: 400;
+    letter-spacing: 0;
+}
+
+/* --- Segmented controls (Wanted tabs + group toggle + Auth tabs) --- */
+.wanted-tabs,
+.wanted-group-toggle,
+.auth-tabs {
+    background: var(--surface-2);
+    border-radius: var(--radius);
+    padding: 4px;
+    gap: 2px;
+    display: inline-flex;
+}
+.wanted-tab,
+.wanted-group,
+.auth-tab {
+    background: transparent;
+    border: 0;
+    border-radius: calc(var(--radius) - 1px);
+    padding: 8px 16px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-2);
+    letter-spacing: 0;
+    transition: background 120ms ease, color 120ms ease;
+}
+.wanted-tab:hover,
+.wanted-group:hover,
+.auth-tab:hover { color: var(--ink); }
+.wanted-tab.active,
+.wanted-group.active,
+.auth-tab.active {
+    background: var(--surface);
+    color: var(--ink);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+}
+.wanted-tab.active .inline-icon,
+.wanted-group.active .inline-icon { color: var(--accent); }
+
+/* --- Label filter strip --- */
+.label-filter-bar {
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+    padding: 0 0 20px;
+    margin: 0 0 24px;
+    gap: 8px;
+}
+.label-chip {
+    background: var(--surface-2);
+    border: 0;
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-2);
+    letter-spacing: 0;
+}
+.label-chip:hover { background: var(--bg-2); color: var(--ink); border: 0; }
+.label-chip.active {
+    background: var(--ink);
+    color: var(--bg);
+    border: 0;
+    font-weight: 600;
+}
+.label-chip-colored.active {
+    background: var(--label-color, var(--accent));
+    color: #fff;
+}
+.label-chip-dot { width: 7px; height: 7px; }
+
+.label-manage-btn,
+.label-group-chat-btn {
+    border-radius: var(--radius);
+    border: 1px solid var(--line-2);
+    background: var(--surface);
+    color: var(--ink-2);
+    font-size: 12px;
+    padding: 5px 12px;
+    font-weight: 500;
+    letter-spacing: 0;
+}
+.label-manage-btn:hover { background: var(--surface-2); color: var(--ink); border-color: var(--line-2); }
+.label-group-chat-btn {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+}
+.label-group-chat-btn:hover { background: color-mix(in oklch, var(--accent), black 10%); }
+.label-group-chat-btn .inline-icon,
+.label-group-chat-btn:hover .inline-icon { color: var(--accent-ink); }
+
+/* --- Member label chip (next to names) --- */
+.member-label-chip {
+    border-radius: var(--radius);
+    padding: 2px 7px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    background: color-mix(in srgb, var(--label-color) 14%, transparent);
+    color: var(--label-color);
+    border: 0;
+}
+.member-label-dot { width: 5px; height: 5px; }
+
+/* --- Family / community member list --- */
+.family-list { gap: 8px; }
+.family-member {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    box-shadow: none;
+    transition: border-color 140ms ease, transform 140ms ease;
+}
+.family-member.clickable:hover {
+    background: var(--surface);
+    border-color: var(--line-2);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+.family-member-name {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: var(--display-letter);
+}
+.family-member-progress {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    margin-top: 4px;
+}
+
+/* --- Trade builder (Community subview B) --- */
+#community-trade-subview {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+}
+.trade-back {
+    background: var(--surface);
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius);
+    padding: 6px 12px 6px 8px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--ink-2);
+}
+.trade-back:hover { background: var(--surface-2); color: var(--ink); }
+.trade-legend {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-style: normal;
+}
+.trade-section {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+}
+.trade-section-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: var(--display-letter);
+    color: var(--ink);
+}
+.trade-section-header {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
+}
+.trade-select-all {
+    border-radius: var(--radius);
+    background: var(--surface-2);
+    border: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--ink-2);
+    text-transform: uppercase;
+    padding: 4px 10px;
+    font-weight: 600;
+}
+.trade-select-all:hover { background: var(--bg-2); }
+
+.trade-list {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+.trade-row {
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+    padding: 8px 10px;
+}
+.trade-row-code {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-2);
+    font-weight: 600;
+}
+.trade-row-name {
+    font-size: 13px;
+    color: var(--ink-2);
+}
+.trade-row-content .trade-row-name {
+    color: var(--ink);
+    font-size: 12px;
+}
+.trade-row-badge {
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 2px 8px;
+}
+.trade-badge-yes { background: var(--accent); color: var(--accent-ink); }
+.trade-badge-no {
+    background: var(--surface-2);
+    color: var(--muted);
+    border: 0;
+}
+.trade-row-tradeable { background: transparent; }
+.trade-row.selected {
+    background: var(--accent-soft);
+}
+
+.trade-search-block { border-top: 1px dashed var(--line); padding-top: 14px; margin-top: 14px; }
+.trade-search-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+}
+.trade-search-input {
+    border-radius: var(--radius);
+    border: 1px solid var(--line-2);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 13px;
+}
+.trade-search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+}
+.trade-search-results {
+    border-radius: var(--radius);
+    border: 1px solid var(--line-2);
+    background: var(--surface);
+    box-shadow: var(--shadow-md);
+}
+.trade-extras-item {
+    background: color-mix(in srgb, var(--gold) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--gold) 30%, transparent);
+    border-radius: var(--radius);
+    font-size: 12px;
+}
+
+.trade-footer {
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+    margin-top: 16px;
+}
+.trade-summary {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+}
+
+/* --- Pending requests / Trades view cards --- */
+.pending-section {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    margin: 0 0 32px;
+}
+.pending-section-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    font-weight: 500;
+    margin-bottom: 12px;
+}
+.pending-request {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: none;
+    padding: 20px;
+    margin-bottom: 12px;
+}
+.pending-request:hover { border-color: var(--line-2); }
+.pending-accepted { border-left: 3px solid var(--accent); }
+.pending-request-header {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: var(--display-letter);
+    margin-bottom: 12px;
+}
+.pending-request-body {
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.5;
+}
+
+.trade-shipment {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+}
+.trade-shipment-label {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: var(--display-letter);
+}
+.trade-shipment-status {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 999px;
+}
+.trade-status-reserved,
+.trade-status-waiting {
+    background: var(--surface);
+    color: var(--muted);
+    border: 1px solid var(--line);
+}
+.trade-status-in-transit {
+    background: color-mix(in srgb, var(--gold) 14%, transparent);
+    color: color-mix(in oklch, var(--gold), black 25%);
+    border: 1px solid color-mix(in srgb, var(--gold) 30%, transparent);
+}
+.trade-status-delivered {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* Trade card chat toggle */
+.trade-card-chat { border-top: 1px dashed var(--line); margin-top: 14px; padding-top: 14px; }
+.trade-chat-toggle {
+    background: transparent;
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    padding: 6px 12px;
+    font-weight: 600;
+}
+.trade-chat-toggle:hover {
+    background: var(--surface-2);
+    color: var(--ink);
+    border-color: var(--ink-2);
+}
+.trade-card-chat-host {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+
+/* --- Wanted view rows --- */
+.wanted-list { gap: 12px; }
+.wanted-row {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    box-shadow: none;
+}
+.wanted-row:hover { border-color: var(--line-2); }
+.wanted-summary {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+}
+.wanted-member {
+    background: var(--surface-2);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    font-size: 13px;
+}
+.wanted-extras-yes {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    font-weight: 700;
+}
+
+/* Wanted by-person row */
+.wanted-person-row {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: none;
+    padding: 16px 20px;
+}
+.wanted-person-row:hover { border-color: var(--line-2); }
+.wanted-person-avatar {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 50%;
+    font-weight: 700;
+    font-family: var(--font-display);
+}
+.wanted-person-name {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: var(--display-letter);
+}
+.wanted-person-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+}
+.wanted-person-count {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    background: var(--surface-2);
+    border-radius: var(--radius);
+    color: var(--ink);
+    border: 0;
+    padding: 8px 14px;
+    min-width: 56px;
+    height: auto;
+    letter-spacing: var(--display-letter);
+}
+
+/* --- Chat panel (used in Community, group chat modal, trade cards) --- */
+.chat-panel {
+    background: var(--surface);
+    border-radius: var(--radius);
+}
+.chat-panel-messages { background: var(--surface); }
+.chat-panel-compose {
+    background: var(--surface-2);
+    border-top: 1px solid var(--line);
+}
+.message-bubble {
+    background: var(--surface-2);
+    border-radius: 12px;
+    border-bottom-left-radius: 3px;
+    font-size: 13px;
+}
+.message-row-me .message-bubble {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 3px;
+}
+.message-author { font-weight: 600; font-size: 12px; }
+.message-time { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.04em; }
+
+.chat-compose-input {
+    border-radius: var(--radius);
+    border: 1px solid var(--line-2);
+    background: var(--surface);
+    font-size: 13px;
+}
+.chat-compose-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+}
+.chat-send-btn { border-radius: var(--radius); }
+
+.community-trade-chat {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+}
+.community-chat-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: var(--display-letter);
+    color: var(--ink);
+}
+.community-chat-header .inline-icon { color: var(--accent); }
+
+/* --- Notification banner --- */
+.notification-banner {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    box-shadow: none;
+    margin-bottom: 24px;
+}
+.notification-icon { color: var(--accent); }
+.notification-text { font-size: 14px; color: var(--ink); }
+.notification-action {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-radius: var(--radius);
+    font-size: 13px;
+}
+.notification-action:hover { background: color-mix(in oklch, var(--accent), black 10%); }
+
+/* --- Modals --- */
+.modal-card,
+.label-manager-card,
+.group-chat-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+}
+.modal-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: var(--display-letter);
+}
+.modal-body { font-size: 14px; color: var(--ink-2); }
+
+.label-manager-row {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+.label-manager-row-name {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: var(--display-letter);
+}
+.label-manager-row-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+}
+.label-create {
+    background: var(--surface-2);
+    border-radius: var(--radius);
+}
+.label-create-input {
+    border-radius: var(--radius);
+    border: 1px solid var(--line-2);
+    background: var(--surface);
+    font-size: 13px;
+}
+.label-create-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+}
+.label-swatch { border-radius: 50%; }
+
+.modal-backdrop {
+    background: rgba(10, 10, 8, 0.4);
+    backdrop-filter: blur(4px);
+}
+
+/* Top bar — also flatten to match the new sidebar */
+.top-bar {
+    background: var(--bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom: 1px solid var(--line);
+}
+.top-bar-title {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: var(--display-letter);
+    color: var(--ink);
+}
+.top-bar-user .user-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+}
+
+/* Activity feed — minimal editorial */
+.activity-event {
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+    padding: 14px 0;
+    box-shadow: none;
+}
+.activity-event:hover { border-color: var(--line); }
+.activity-icon { background: transparent; width: 6px; height: 6px; border-radius: 50%; margin-top: 8px; }
+.activity-icon svg { display: none; }
+.activity-icon-success { background: var(--accent); }
+.activity-icon-info    { background: var(--accent); }
+.activity-icon-danger  { background: var(--warn); }
+.activity-icon-muted   { background: var(--muted); }
+.activity-icon-neutral { background: var(--muted); }
+.activity-text { font-size: 14px; color: var(--ink); }
+.activity-time {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+}
+
+/* Profile view */
+.profile-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: none;
+}
+.profile-card-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    font-weight: 500;
+}
+.profile-field-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-transform: uppercase;
+}
+.profile-field-value { font-size: 15px; color: var(--ink); }
+
+/* Auth screen */
+.auth-card { padding: 32px; }
+.auth-subtitle { font-size: 15px; color: var(--ink-2); }
+.auth-field input,
+input[type="search"].search-input,
+.auth-field-name input {
+    border-radius: var(--radius);
+    border: 1px solid var(--line-2);
+    background: var(--surface);
+}
+.auth-field input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+/* Empty / placeholder views (used in Wanted, Trades, Activity) */
+.placeholder-view {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: none;
+}
+.placeholder-view h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: var(--display-letter);
+}
+
+/* Generic .card (used inside views) */
+.card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: none;
+}
+
+/* Tag pills */
+.tag {
+    background: var(--surface-2);
+    color: var(--ink-2);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+}
+.tag.accent { background: var(--accent-soft); color: var(--accent); }
