@@ -4488,74 +4488,135 @@ input[type="search"].search-input,
     box-shadow: var(--shadow-sm);
 }
 
-/* Row 1: parties on the left, "Open" button on the right */
+/* Row 1: two sides side-by-side with arrow in the middle, open chevron at the end */
 .trade-row-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+    align-items: stretch;
+    gap: 14px;
     margin-bottom: 14px;
 }
-.trade-row-parties {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.trade-row-side {
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
-.trade-row-avatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: var(--accent-soft);
-    color: var(--accent);
-    display: grid;
-    place-items: center;
+.trade-row-side-theirs { align-items: flex-end; text-align: right; }
+
+.trade-row-side-header {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+.trade-row-side-theirs .trade-row-side-header { flex-direction: row-reverse; }
+.trade-row-side-title {
     font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 12px;
-    flex-shrink: 0;
-}
-.trade-row-avatar.trade-row-avatar-other {
-    background: var(--surface-2);
-    color: var(--ink-2);
-}
-.trade-row-arrow {
-    display: inline-flex;
-    align-items: center;
-    color: var(--muted);
-}
-.trade-row-arrow svg { width: 14px; height: 14px; }
-.trade-row-names {
-    font-family: var(--font-display);
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 600;
     color: var(--ink);
     letter-spacing: var(--display-letter);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    min-width: 0;
 }
-.trade-row-names strong { font-weight: 600; }
+.trade-row-side-count {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    background: var(--surface-2);
+    padding: 1px 6px;
+    border-radius: 999px;
+    line-height: 1.5;
+}
 
+/* Sticker chips: small flag + mono code, wrap freely */
+.trade-row-side-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+}
+.trade-row-side-theirs .trade-row-side-chips { justify-content: flex-end; }
+.trade-mini-sticker {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 5px 2px 3px;
+    background: var(--surface-2);
+    border-radius: 4px;
+    font-size: 0;
+    line-height: 1;
+}
+.trade-mini-sticker .fi {
+    width: 14px;
+    height: auto;
+    border-radius: 1px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+.trade-mini-sticker-code {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 600;
+    color: var(--ink-2);
+    letter-spacing: 0.02em;
+}
+.trade-mini-more {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    padding: 2px 5px;
+    letter-spacing: 0.04em;
+}
+.trade-mini-empty {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    font-style: italic;
+    padding: 2px 0;
+}
+
+/* Centered arrow between the two sides */
+.trade-row-arrow-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    padding: 0 4px;
+}
+.trade-row-arrow-center svg { width: 18px; height: 18px; }
+
+/* Open chevron on the far right */
 .trade-row-open {
     background: transparent;
     border: 0;
     color: var(--muted);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 600;
-    padding: 4px 6px;
+    padding: 6px;
     border-radius: var(--radius);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    justify-content: center;
     transition: color 140ms ease, background 140ms ease;
+    align-self: center;
 }
 .trade-row-open:hover { color: var(--accent); background: var(--accent-soft); }
-.trade-row-open svg { width: 14px; height: 14px; }
+.trade-row-open svg { width: 18px; height: 18px; }
+
+@media (max-width: 720px) {
+    .trade-row-head {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
+    }
+    .trade-row-arrow-center { transform: rotate(90deg); justify-self: center; }
+    .trade-row-side-theirs { align-items: flex-start; text-align: left; }
+    .trade-row-side-theirs .trade-row-side-header { flex-direction: row; }
+    .trade-row-side-theirs .trade-row-side-chips { justify-content: flex-start; }
+    .trade-row-open { position: absolute; top: 10px; right: 10px; }
+    .trade-row-accepted { position: relative; }
+}
 
 /* Row 2: 5 dots connected by tracks */
 .trade-row-pipeline {

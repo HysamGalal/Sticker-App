@@ -3550,8 +3550,11 @@ function renderTradeLifecycle(req) {
     return wrap;
 }
 
-// Compact single-row visual for an accepted/in-progress trade.
-// Click it to open the detail overlay (renderAcceptedDetail).
+// Compact one-row visual for an accepted/in-progress trade.
+// Top:  YOU [your stickers as flag chips]  ↔  THEM [their stickers]
+// Mid:  5-dot pipeline
+// Bot:  active stage label + action button, shifted under the active dot
+// Click anywhere on the row (except buttons) opens the detail modal.
 function renderAcceptedCard(req, kind) {
     const row = document.createElement("div");
     row.className = "pending-request pending-accepted trade-row trade-row-accepted";
@@ -3560,39 +3563,46 @@ function renderAcceptedCard(req, kind) {
     const otherId = isViewerSender ? req.recipient_id : req.sender_id;
     const otherName = profileNameById(otherId);
     const myName = profileNameById(currentUser?.id) || "You";
-    const myInitial = (myName.trim().charAt(0) || "?").toUpperCase();
-    const otherInitial = (otherName.trim().charAt(0) || "?").toUpperCase();
+
+    const items = req.trade_request_items || [];
+    const giveDir = isViewerSender ? "sender_gives" : "recipient_gives";
+    const recvDir = isViewerSender ? "recipient_gives" : "sender_gives";
+    const givesItems = items.filter((i) => i.direction === giveDir);  // stickers I'm giving
+    const recvItems = items.filter((i) => i.direction === recvDir);   // stickers I'm receiving
 
     const steps = computeTradeLifecycle(req);
     const activeIdx = steps.findIndex((s) => s.active);
     const activeStep = activeIdx >= 0 ? steps[activeIdx] : null;
     const stepLabels = ["Proposed", "Accepted", "In transit", "Delivered", "Complete"];
 
-    // ----- Top row: parties + Open button -----
+    // ----- Row 1: two sides + arrow + open chevron -----
     const head = document.createElement("div");
     head.className = "trade-row-head";
 
-    const parties = document.createElement("div");
-    parties.className = "trade-row-parties";
-    parties.innerHTML =
-        `<span class="trade-row-avatar trade-row-avatar-me">${escapeHtml(myInitial)}</span>` +
-        `<span class="trade-row-arrow" aria-hidden="true"><i data-lucide="arrow-left-right"></i></span>` +
-        `<span class="trade-row-avatar trade-row-avatar-other">${escapeHtml(otherInitial)}</span>` +
-        `<span class="trade-row-names"><strong>You</strong> &middot; ${escapeHtml(otherName)}</span>`;
-    head.appendChild(parties);
+    const sideMine = renderTradeRowSide("You give", givesItems, "mine");
+    const sideTheirs = renderTradeRowSide(otherName, recvItems, "theirs");
+    const arrow = document.createElement("div");
+    arrow.className = "trade-row-arrow-center";
+    arrow.innerHTML = '<i data-lucide="arrow-left-right" aria-hidden="true"></i>';
+
+    head.appendChild(sideMine);
+    head.appendChild(arrow);
+    head.appendChild(sideTheirs);
 
     const openBtn = document.createElement("button");
     openBtn.type = "button";
     openBtn.className = "trade-row-open";
-    openBtn.innerHTML = '<span>Open</span><i data-lucide="chevron-right" aria-hidden="true"></i>';
+    openBtn.setAttribute("aria-label", "Open trade details");
+    openBtn.innerHTML = '<i data-lucide="chevron-right" aria-hidden="true"></i>';
     openBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         openTradeDetailModal(req);
     });
     head.appendChild(openBtn);
+
     row.appendChild(head);
 
-    // ----- Pipeline: 5 dots connected by lines -----
+    // ----- Row 2: 5-dot pipeline -----
     const pipeline = document.createElement("div");
     pipeline.className = "trade-row-pipeline";
     for (let i = 0; i < steps.length; i++) {
@@ -3608,22 +3618,14 @@ function renderAcceptedCard(req, kind) {
         dot.textContent = String(i + 1);
         pipeline.appendChild(dot);
         if (i < steps.length - 1) {
-            const line = document.createElement("div");
-            line.className = "pipeline-track" + (step.done ? " done" : "");
-            pipeline.appendChild(line);
+            const track = document.createElement("div");
+            track.className = "pipeline-track" + (step.done ? " done" : "");
+            pipeline.appendChild(track);
         }
     }
     row.appendChild(pipeline);
 
-    // ----- Current-step caption + action button.
-    // Sits directly below the pipeline. The active stage label is shown,
-    // with the action button (if any) inline next to it. The whole block is
-    // shifted horizontally to align under the active dot via a CSS variable.
-    const items = req.trade_request_items || [];
-    const giveDir = isViewerSender ? "sender_gives" : "recipient_gives";
-    const recvDir = isViewerSender ? "recipient_gives" : "sender_gives";
-    const givesItems = items.filter((i) => i.direction === giveDir);
-    const recvItems = items.filter((i) => i.direction === recvDir);
+    // ----- Row 3: current-stage caption + action -----
     const yourSentAt = isViewerSender ? req.sender_sent_at : req.recipient_sent_at;
     const theirSentAt = isViewerSender ? req.recipient_sent_at : req.sender_sent_at;
     const yourReceivedAt = isViewerSender ? req.sender_received_at : req.recipient_received_at;
@@ -3640,8 +3642,6 @@ function renderAcceptedCard(req, kind) {
 
     const current = document.createElement("div");
     current.className = "trade-row-current";
-    // Position the caption under the active dot column. Each dot occupies
-    // 1/5 of the pipeline width; the caption tries to center under it.
     current.style.setProperty("--active-step", String(activeIdx >= 0 ? activeIdx : 0));
 
     const label = document.createElement("span");
@@ -3670,6 +3670,72 @@ function renderAcceptedCard(req, kind) {
     row.style.cursor = "pointer";
 
     return row;
+}
+
+// Builds one side of a compact trade row.
+// title: short header (e.g. "You give" or partner display name)
+// items: trade_request_items for this direction
+// variant: "mine" | "theirs"
+function renderTradeRowSide(title, items, variant) {
+    const side = document.createElement("div");
+    side.className = `trade-row-side trade-row-side-${variant}`;
+
+    const header = document.createElement("div");
+    header.className = "trade-row-side-header";
+    const titleEl = document.createElement("span");
+    titleEl.className = "trade-row-side-title";
+    titleEl.textContent = title;
+    header.appendChild(titleEl);
+    const countEl = document.createElement("span");
+    countEl.className = "trade-row-side-count";
+    countEl.textContent = `${items.length}`;
+    header.appendChild(countEl);
+    side.appendChild(header);
+
+    // Sticker chips. Cap at 6 with a "+N" overflow indicator.
+    const chips = document.createElement("div");
+    chips.className = "trade-row-side-chips";
+    const MAX = 6;
+    const shown = items.slice(0, MAX);
+    for (const it of shown) {
+        chips.appendChild(renderTradeMiniSticker(it.sticker_code));
+    }
+    if (items.length > MAX) {
+        const more = document.createElement("span");
+        more.className = "trade-mini-more";
+        more.textContent = `+${items.length - MAX}`;
+        chips.appendChild(more);
+    }
+    if (items.length === 0) {
+        const empty = document.createElement("span");
+        empty.className = "trade-mini-empty";
+        empty.textContent = "nothing";
+        chips.appendChild(empty);
+    }
+    side.appendChild(chips);
+    return side;
+}
+
+// Tiny rectangular sticker pill — flag + mono code.
+function renderTradeMiniSticker(code) {
+    const wrap = document.createElement("span");
+    wrap.className = "trade-mini-sticker";
+
+    const meta = getStickerIndex()[code] || {};
+    const team = meta.team || "";
+    const iso = team ? getCountryCode(team) : null;
+
+    if (iso) {
+        const flag = document.createElement("span");
+        flag.className = `fi fi-${iso}`;
+        wrap.appendChild(flag);
+    }
+    const codeEl = document.createElement("span");
+    codeEl.className = "trade-mini-sticker-code";
+    codeEl.textContent = formatStickerCode(code);
+    wrap.appendChild(codeEl);
+    wrap.title = meta.name ? `${meta.name} (${team})` : team || code;
+    return wrap;
 }
 
 // The FULL trade details — same layout the old in-line card had.
