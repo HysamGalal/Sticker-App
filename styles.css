@@ -4394,6 +4394,86 @@ input[type="search"].search-input,
 }
 
 /* ====================================================================
+   Trade lifecycle pipeline — 5-step deal-level summary
+   shown on accepted-trade cards above the per-direction shipments.
+   ==================================================================== */
+.lifecycle {
+    margin: 14px 0 16px;
+}
+.lifecycle-pipeline {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+}
+.lifecycle-step {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 12px 12px;
+    background: var(--surface-2);
+    border-radius: var(--radius);
+    border-top: 2px solid var(--line);
+    opacity: 0.55;
+    min-height: 72px;
+    transition: background 160ms ease, opacity 160ms ease, border-color 160ms ease;
+}
+.lifecycle-step.done {
+    opacity: 1;
+    border-top-color: var(--accent);
+}
+.lifecycle-step.active {
+    opacity: 1;
+    border-top-color: var(--accent);
+    background: var(--accent-soft);
+}
+/* partial: shipping/delivering started by one side but not the other */
+.lifecycle-step.partial {
+    opacity: 1;
+    border-top-color: var(--gold);
+}
+.lifecycle-step.declined {
+    opacity: 1;
+    border-top-color: var(--warn);
+    background: color-mix(in oklch, var(--warn), transparent 90%);
+}
+.lifecycle-step-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    font-weight: 600;
+}
+.lifecycle-step.done .lifecycle-step-num,
+.lifecycle-step.active .lifecycle-step-num {
+    color: var(--accent);
+}
+.lifecycle-step.declined .lifecycle-step-num {
+    color: var(--warn);
+}
+.lifecycle-step-label {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: var(--display-letter);
+    line-height: 1.2;
+}
+.lifecycle-step-when {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    margin-top: auto;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 760px) {
+    /* Stack to 2 wide columns + 1 below so the pipeline stays scannable. */
+    .lifecycle-pipeline { grid-template-columns: repeat(2, 1fr); }
+    .lifecycle-step { min-height: 64px; }
+}
+
+/* ====================================================================
    Trade sub-view tabs — Discover / My trades. Sits at the top of both
    #view-wanted and #view-trades, since they're two halves of the same
    sidebar section ("Trade").

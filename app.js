@@ -3418,6 +3418,138 @@ function renderPendingCard(req, kind) {
 
 // ACCEPTED (in-progress) state: each direction shown as its own shipment
 // with status badge and an action button if it's the viewer's turn.
+/* ----- Trade lifecycle (5-step pipeline) ----------------------------------
+   Summarises a trade at the deal level:
+   1) Proposed   — created_at
+   2) Accepted   — accepted_at (or "Declined" if status===declined)
+   3) In transit — at least one side has marked Sent
+   4) Delivered  — at least one side has confirmed Received
+   5) Complete   — completed_at
+
+   A step is "active" if it's the first one not yet "done". The action
+   buttons (Sent / Received) live below in renderShipment — this pipeline
+   is the at-a-glance summary above the per-direction details.
+   ------------------------------------------------------------------------ */
+function computeTradeLifecycle(req) {
+    if (!req) return [];
+
+    const status = req.status;
+    const isDeclined = status === "declined";
+    const isCancelled = status === "cancelled";
+    const isCompleted = status === "completed" || !!req.completed_at;
+
+    const senderSentAt = req.sender_sent_at;
+    const recipientSentAt = req.recipient_sent_at;
+    const recipientReceivedAt = req.recipient_received_at;
+    const senderReceivedAt = req.sender_received_at;
+
+    const oneShipped = !!senderSentAt || !!recipientSentAt;
+    const bothShipped = !!senderSentAt && !!recipientSentAt;
+    const oneReceived = !!recipientReceivedAt || !!senderReceivedAt;
+    const bothReceived = !!recipientReceivedAt && !!senderReceivedAt;
+
+    const latestShip = maxDate(senderSentAt, recipientSentAt);
+    const latestReceive = maxDate(recipientReceivedAt, senderReceivedAt);
+
+    const steps = [
+        {
+            label: "Proposed",
+            done: !!req.created_at,
+            time: req.created_at,
+        },
+        {
+            label: isDeclined ? "Declined" : "Accepted",
+            done: !!req.accepted_at || isDeclined,
+            time: req.accepted_at || (isDeclined ? req.updated_at : null),
+            declined: isDeclined,
+        },
+        {
+            label: "In transit",
+            done: bothShipped,
+            time: latestShip,
+            partial: oneShipped && !bothShipped,
+        },
+        {
+            label: "Delivered",
+            done: bothReceived,
+            time: latestReceive,
+            partial: oneReceived && !bothReceived,
+        },
+        {
+            label: "Complete",
+            done: isCompleted,
+            time: req.completed_at,
+        },
+    ];
+
+    // First not-done step is "active" (unless the trade was declined/cancelled).
+    if (!isDeclined && !isCancelled) {
+        for (const step of steps) {
+            if (step.done) continue;
+            step.active = true;
+            break;
+        }
+    }
+    return steps;
+}
+
+function maxDate(a, b) {
+    if (!a) return b || null;
+    if (!b) return a || null;
+    return new Date(a).getTime() >= new Date(b).getTime() ? a : b;
+}
+
+function formatLifecycleDate(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    const now = new Date();
+    const sameYear = d.getFullYear() === now.getFullYear();
+    return d.toLocaleDateString([], {
+        month: "short",
+        day: "numeric",
+        ...(sameYear ? {} : { year: "numeric" }),
+    });
+}
+
+function renderTradeLifecycle(req) {
+    const wrap = document.createElement("div");
+    wrap.className = "lifecycle";
+
+    const pipeline = document.createElement("div");
+    pipeline.className = "lifecycle-pipeline";
+
+    const steps = computeTradeLifecycle(req);
+    for (const [i, step] of steps.entries()) {
+        const cell = document.createElement("div");
+        let cls = "lifecycle-step";
+        if (step.declined) cls += " declined";
+        else if (step.done) cls += " done";
+        if (step.active) cls += " active";
+        if (step.partial) cls += " partial";
+        cell.className = cls;
+
+        const numEl = document.createElement("div");
+        numEl.className = "lifecycle-step-num";
+        numEl.textContent = String(i + 1).padStart(2, "0");
+        cell.appendChild(numEl);
+
+        const labelEl = document.createElement("div");
+        labelEl.className = "lifecycle-step-label";
+        labelEl.textContent = step.label;
+        cell.appendChild(labelEl);
+
+        const whenEl = document.createElement("div");
+        whenEl.className = "lifecycle-step-when";
+        whenEl.textContent = step.time ? formatLifecycleDate(step.time) : "—";
+        cell.appendChild(whenEl);
+
+        pipeline.appendChild(cell);
+    }
+
+    wrap.appendChild(pipeline);
+    return wrap;
+}
+
 function renderAcceptedCard(req, kind) {
     const card = document.createElement("div");
     card.className = "pending-request pending-accepted";
@@ -3430,6 +3562,9 @@ function renderAcceptedCard(req, kind) {
     header.className = "pending-request-header";
     header.innerHTML = `<i data-lucide="handshake" class="inline-icon" aria-hidden="true"></i> Accepted · with ${escapeHtml(otherName)}`;
     card.appendChild(header);
+
+    // 5-step lifecycle pipeline — visual summary of where the trade is.
+    card.appendChild(renderTradeLifecycle(req));
 
     const items = req.trade_request_items || [];
 
