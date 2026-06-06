@@ -3550,9 +3550,133 @@ function renderTradeLifecycle(req) {
     return wrap;
 }
 
+// Compact single-row visual for an accepted/in-progress trade.
+// Click it to open the detail overlay (renderAcceptedDetail).
 function renderAcceptedCard(req, kind) {
+    const row = document.createElement("div");
+    row.className = "pending-request pending-accepted trade-row trade-row-accepted";
+
+    const isViewerSender = req.sender_id === currentUser.id;
+    const otherId = isViewerSender ? req.recipient_id : req.sender_id;
+    const otherName = profileNameById(otherId);
+    const myName = profileNameById(currentUser?.id) || "You";
+    const myInitial = (myName.trim().charAt(0) || "?").toUpperCase();
+    const otherInitial = (otherName.trim().charAt(0) || "?").toUpperCase();
+
+    const steps = computeTradeLifecycle(req);
+    const activeIdx = steps.findIndex((s) => s.active);
+    const activeStep = activeIdx >= 0 ? steps[activeIdx] : null;
+    const stepLabels = ["Proposed", "Accepted", "In transit", "Delivered", "Complete"];
+
+    // ----- Top row: parties + Open button -----
+    const head = document.createElement("div");
+    head.className = "trade-row-head";
+
+    const parties = document.createElement("div");
+    parties.className = "trade-row-parties";
+    parties.innerHTML =
+        `<span class="trade-row-avatar trade-row-avatar-me">${escapeHtml(myInitial)}</span>` +
+        `<span class="trade-row-arrow" aria-hidden="true"><i data-lucide="arrow-left-right"></i></span>` +
+        `<span class="trade-row-avatar trade-row-avatar-other">${escapeHtml(otherInitial)}</span>` +
+        `<span class="trade-row-names"><strong>You</strong> &middot; ${escapeHtml(otherName)}</span>`;
+    head.appendChild(parties);
+
+    const openBtn = document.createElement("button");
+    openBtn.type = "button";
+    openBtn.className = "trade-row-open";
+    openBtn.innerHTML = '<span>Open</span><i data-lucide="chevron-right" aria-hidden="true"></i>';
+    openBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openTradeDetailModal(req);
+    });
+    head.appendChild(openBtn);
+    row.appendChild(head);
+
+    // ----- Pipeline: 5 dots connected by lines -----
+    const pipeline = document.createElement("div");
+    pipeline.className = "trade-row-pipeline";
+    for (let i = 0; i < steps.length; i++) {
+        const step = steps[i];
+        const dot = document.createElement("div");
+        let cls = "pipeline-dot";
+        if (step.declined) cls += " declined";
+        else if (step.done) cls += " done";
+        if (step.active) cls += " active";
+        if (step.partial) cls += " partial";
+        dot.className = cls;
+        dot.title = stepLabels[i] + (step.time ? " · " + formatLifecycleDate(step.time) : "");
+        dot.textContent = String(i + 1);
+        pipeline.appendChild(dot);
+        if (i < steps.length - 1) {
+            const line = document.createElement("div");
+            line.className = "pipeline-track" + (step.done ? " done" : "");
+            pipeline.appendChild(line);
+        }
+    }
+    row.appendChild(pipeline);
+
+    // ----- Current-step caption + action button.
+    // Sits directly below the pipeline. The active stage label is shown,
+    // with the action button (if any) inline next to it. The whole block is
+    // shifted horizontally to align under the active dot via a CSS variable.
+    const items = req.trade_request_items || [];
+    const giveDir = isViewerSender ? "sender_gives" : "recipient_gives";
+    const recvDir = isViewerSender ? "recipient_gives" : "sender_gives";
+    const givesItems = items.filter((i) => i.direction === giveDir);
+    const recvItems = items.filter((i) => i.direction === recvDir);
+    const yourSentAt = isViewerSender ? req.sender_sent_at : req.recipient_sent_at;
+    const theirSentAt = isViewerSender ? req.recipient_sent_at : req.sender_sent_at;
+    const yourReceivedAt = isViewerSender ? req.sender_received_at : req.recipient_received_at;
+
+    let actionLabel = null;
+    let actionHandler = null;
+    if (givesItems.length > 0 && !yourSentAt) {
+        actionLabel = "Mark Sent";
+        actionHandler = (btn) => onMarkYouSent(req.id, isViewerSender, btn);
+    } else if (recvItems.length > 0 && theirSentAt && !yourReceivedAt) {
+        actionLabel = "Mark Received";
+        actionHandler = (btn) => onMarkYouReceived(req.id, isViewerSender, btn);
+    }
+
+    const current = document.createElement("div");
+    current.className = "trade-row-current";
+    // Position the caption under the active dot column. Each dot occupies
+    // 1/5 of the pipeline width; the caption tries to center under it.
+    current.style.setProperty("--active-step", String(activeIdx >= 0 ? activeIdx : 0));
+
+    const label = document.createElement("span");
+    label.className = "trade-row-stage-label";
+    label.textContent = activeStep ? activeStep.label : (req.status === "completed" ? "Complete" : "—");
+    current.appendChild(label);
+
+    if (actionLabel) {
+        const actBtn = document.createElement("button");
+        actBtn.type = "button";
+        actBtn.className = "btn btn-primary btn-small trade-row-action";
+        actBtn.textContent = actionLabel;
+        actBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            actionHandler(actBtn);
+        });
+        current.appendChild(actBtn);
+    }
+    row.appendChild(current);
+
+    // Click anywhere on the row (except buttons) opens the detail overlay.
+    row.addEventListener("click", (e) => {
+        if (e.target.closest("button")) return;
+        openTradeDetailModal(req);
+    });
+    row.style.cursor = "pointer";
+
+    return row;
+}
+
+// The FULL trade details — same layout the old in-line card had.
+// Mounted inside the trade detail modal when the user clicks a compact row.
+function renderAcceptedDetail(req) {
     const card = document.createElement("div");
-    card.className = "pending-request pending-accepted";
+    card.className = "trade-detail-body-inner";
 
     const isViewerSender = req.sender_id === currentUser.id;
     const otherId = isViewerSender ? req.recipient_id : req.sender_id;
@@ -3560,7 +3684,7 @@ function renderAcceptedCard(req, kind) {
 
     const header = document.createElement("div");
     header.className = "pending-request-header";
-    header.innerHTML = `<i data-lucide="handshake" class="inline-icon" aria-hidden="true"></i> Accepted · with ${escapeHtml(otherName)}`;
+    header.innerHTML = `<i data-lucide="handshake" class="inline-icon" aria-hidden="true"></i> Trade with ${escapeHtml(otherName)}`;
     card.appendChild(header);
 
     // 5-step lifecycle pipeline — visual summary of where the trade is.
@@ -3634,6 +3758,57 @@ function renderAcceptedCard(req, kind) {
     card.appendChild(renderTradeChatSection(req));
 
     return card;
+}
+
+/* ----- Trade detail modal ------------------------------------------------
+   Opens when the user clicks a compact accepted-trade row. Shows the
+   full pipeline + shipments + chat. Closes on backdrop click / Esc /
+   close X. Cleans up the embedded chat realtime subscription on close.
+   ------------------------------------------------------------------------ */
+async function openTradeDetailModal(req) {
+    const modal = document.getElementById("trade-detail-modal");
+    const body = document.getElementById("trade-detail-body");
+    if (!modal || !body) return;
+
+    // Stash the current trade so it can be re-rendered if state changes
+    // while the modal is open (e.g. after a Sent/Received action).
+    modal.dataset.tradeId = req.id;
+
+    body.innerHTML = "";
+    body.appendChild(renderAcceptedDetail(req));
+    modal.classList.remove("hidden");
+    refreshIcons();
+}
+
+function closeTradeDetailModal() {
+    const modal = document.getElementById("trade-detail-modal");
+    if (!modal) return;
+    modal.classList.add("hidden");
+    // Cleanup the embedded chat realtime sub so we don't leak the channel.
+    const body = document.getElementById("trade-detail-body");
+    if (body) {
+        for (const host of body.querySelectorAll(".trade-card-chat-host")) {
+            unmountChatPanel(host);
+        }
+        body.innerHTML = "";
+    }
+    modal.dataset.tradeId = "";
+}
+
+function wireTradeDetailControls() {
+    document.getElementById("trade-detail-close")?.addEventListener("click", closeTradeDetailModal);
+    const modal = document.getElementById("trade-detail-modal");
+    if (modal) {
+        modal.addEventListener("click", (e) => {
+            if (e.target?.dataset?.tradeDetailClose === "true") closeTradeDetailModal();
+        });
+    }
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            const m = document.getElementById("trade-detail-modal");
+            if (m && !m.classList.contains("hidden")) closeTradeDetailModal();
+        }
+    });
 }
 
 // Creates the "Chat" toggle + lazy-mounted panel for an accepted-trade card.
@@ -4988,6 +5163,7 @@ async function init() {
     wireGroupChatControls();
     wireHomeControls();
     wireCommunityDetailControls();
+    wireTradeDetailControls();
 
     // Render all static lucide icons present in index.html.
     refreshIcons();
