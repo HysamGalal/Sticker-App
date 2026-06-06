@@ -3693,11 +3693,17 @@ function renderAcceptedCard(req, kind) {
 
     row.appendChild(head);
 
-    // ----- Row 2: 5-dot pipeline -----
+    // ----- Row 2: 5-dot pipeline with labels under each dot -----
     const pipeline = document.createElement("div");
     pipeline.className = "trade-row-pipeline";
     for (let i = 0; i < steps.length; i++) {
         const step = steps[i];
+
+        const cell = document.createElement("div");
+        cell.className = "pipeline-cell";
+        if (step.active) cell.classList.add("active");
+        if (step.done) cell.classList.add("done");
+
         const dot = document.createElement("div");
         let cls = "pipeline-dot";
         if (step.declined) cls += " declined";
@@ -3707,7 +3713,15 @@ function renderAcceptedCard(req, kind) {
         dot.className = cls;
         dot.title = stepLabels[i] + (step.time ? " · " + formatLifecycleDate(step.time) : "");
         dot.textContent = String(i + 1);
-        pipeline.appendChild(dot);
+        cell.appendChild(dot);
+
+        const cellLabel = document.createElement("div");
+        cellLabel.className = "pipeline-cell-label";
+        cellLabel.textContent = stepLabels[i];
+        cell.appendChild(cellLabel);
+
+        pipeline.appendChild(cell);
+
         if (i < steps.length - 1) {
             const track = document.createElement("div");
             track.className = "pipeline-track" + (step.done ? " done" : "");
@@ -3716,40 +3730,63 @@ function renderAcceptedCard(req, kind) {
     }
     row.appendChild(pipeline);
 
-    // ----- Row 3: current-stage caption + action -----
+    // ----- Row 3: contextual next-action banner -----
+    // Three states:
+    //   (a) Viewer has a concrete action → primary button (Mark Sent / Mark Received)
+    //   (b) Waiting on the partner       → muted "Waiting on X to {ship|confirm}" pill
+    //   (c) Trade complete               → "Trade complete" check
     const yourSentAt = isViewerSender ? req.sender_sent_at : req.recipient_sent_at;
     const theirSentAt = isViewerSender ? req.recipient_sent_at : req.sender_sent_at;
     const yourReceivedAt = isViewerSender ? req.sender_received_at : req.recipient_received_at;
+    const theirReceivedAt = isViewerSender ? req.recipient_received_at : req.sender_received_at;
 
     let actionLabel = null;
     let actionHandler = null;
-    if (givesItems.length > 0 && !yourSentAt) {
-        actionLabel = "Mark Sent";
+    let waitingText = null;
+    let completeText = null;
+
+    if (req.status === "completed") {
+        completeText = "Trade complete";
+    } else if (givesItems.length > 0 && !yourSentAt) {
+        actionLabel = "Mark as Sent";
         actionHandler = (btn) => onMarkYouSent(req.id, isViewerSender, btn);
     } else if (recvItems.length > 0 && theirSentAt && !yourReceivedAt) {
-        actionLabel = "Mark Received";
+        actionLabel = "Mark as Received";
         actionHandler = (btn) => onMarkYouReceived(req.id, isViewerSender, btn);
+    } else if (recvItems.length > 0 && !theirSentAt) {
+        waitingText = `Waiting on ${otherName} to ship`;
+    } else if (givesItems.length > 0 && yourSentAt && !theirReceivedAt) {
+        waitingText = `Waiting on ${otherName} to confirm receipt`;
     }
 
     const current = document.createElement("div");
     current.className = "trade-row-current";
-    current.style.setProperty("--active-step", String(activeIdx >= 0 ? activeIdx : 0));
 
     const label = document.createElement("span");
     label.className = "trade-row-stage-label";
     label.textContent = activeStep ? activeStep.label : (req.status === "completed" ? "Complete" : "—");
     current.appendChild(label);
 
-    if (actionLabel) {
+    if (completeText) {
+        const done = document.createElement("span");
+        done.className = "trade-row-complete";
+        done.innerHTML = '<i data-lucide="check-check" class="inline-icon" aria-hidden="true"></i> ' + escapeHtml(completeText);
+        current.appendChild(done);
+    } else if (actionLabel) {
         const actBtn = document.createElement("button");
         actBtn.type = "button";
-        actBtn.className = "btn btn-primary btn-small trade-row-action";
+        actBtn.className = "btn btn-primary trade-row-action";
         actBtn.textContent = actionLabel;
         actBtn.addEventListener("click", (e) => {
             e.stopPropagation();
             actionHandler(actBtn);
         });
         current.appendChild(actBtn);
+    } else if (waitingText) {
+        const wait = document.createElement("span");
+        wait.className = "trade-row-waiting";
+        wait.innerHTML = '<i data-lucide="clock" class="inline-icon" aria-hidden="true"></i> ' + escapeHtml(waitingText);
+        current.appendChild(wait);
     }
     row.appendChild(current);
 

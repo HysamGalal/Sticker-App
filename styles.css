@@ -4618,13 +4618,36 @@ input[type="search"].search-input,
     .trade-row-accepted { position: relative; }
 }
 
-/* Row 2: 5 dots connected by tracks */
+/* Row 2: 5 dots with step labels underneath, connected by tracks */
 .trade-row-pipeline {
     display: grid;
-    grid-template-columns: auto 1fr auto 1fr auto 1fr auto 1fr auto;
-    align-items: center;
+    grid-template-columns: minmax(60px, auto) 1fr minmax(60px, auto) 1fr minmax(60px, auto) 1fr minmax(60px, auto) 1fr minmax(60px, auto);
+    align-items: start;
     gap: 0;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
+}
+.pipeline-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    padding: 0 2px;
+}
+.pipeline-cell-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    text-align: center;
+    word-break: break-word;
+}
+.pipeline-cell.done .pipeline-cell-label { color: var(--ink-2); }
+.pipeline-cell.active .pipeline-cell-label {
+    color: var(--accent);
+    font-weight: 700;
 }
 .pipeline-dot {
     width: 26px;
@@ -4666,21 +4689,20 @@ input[type="search"].search-input,
     height: 2px;
     background: var(--line);
     min-width: 12px;
-    margin: 0 4px;
+    margin: 12px 4px 0;            /* top offset = (dot height - track height) / 2 */
+    align-self: start;
 }
 .pipeline-track.done { background: var(--accent); }
 
-/* Row 3: current stage label + action button.
-   `--active-step` is set by JS so the caption sits roughly under the
-   active dot (each dot column = ~20% of the pipeline width). */
+/* Row 3: stage caption on the left, primary action / waiting indicator on the right. */
 .trade-row-current {
     display: flex;
     align-items: center;
-    gap: 10px;
-    /* Each step + half a step from the left edge to center under that dot */
-    padding-left: calc(var(--active-step, 0) * 20% + 4%);
-    min-height: 32px;
-    transition: padding-left 220ms ease;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 36px;
+    padding-top: 4px;
+    border-top: 1px dashed var(--line);
 }
 .trade-row-stage-label {
     font-family: var(--font-mono);
@@ -4691,16 +4713,39 @@ input[type="search"].search-input,
     color: var(--accent);
 }
 .trade-row-action {
-    padding: 5px 12px;
-    font-size: 12px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
 }
+.trade-row-waiting {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+}
+.trade-row-waiting .inline-icon { width: 14px; height: 14px; }
+.trade-row-complete {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+}
+.trade-row-complete .inline-icon { width: 14px; height: 14px; }
 
 @media (max-width: 720px) {
-    /* On narrow screens the dot-spacing collapses but the row remains
-       compact. The current-stage column alignment becomes approximate. */
-    .pipeline-track { min-width: 6px; margin: 0 2px; }
+    /* Narrow screens: shrink dots, allow labels to wrap to 2 lines,
+       and let the action row stack under the stage label. */
+    .trade-row-pipeline {
+        grid-template-columns: minmax(48px, auto) 1fr minmax(48px, auto) 1fr minmax(48px, auto) 1fr minmax(48px, auto) 1fr minmax(48px, auto);
+    }
+    .pipeline-track { min-width: 6px; margin: 10px 2px 0; }
     .pipeline-dot { width: 22px; height: 22px; font-size: 10px; }
-    .trade-row-current { padding-left: 0; flex-wrap: wrap; }
+    .pipeline-cell-label { font-size: 9px; }
+    .trade-row-current { flex-wrap: wrap; }
 }
 
 /* ====================================================================
