@@ -790,6 +790,7 @@ function buildGroupHeader(group) {
         const meta = (typeof TEAM_META !== "undefined" && TEAM_META[teamName]) || { flag: "🏳" };
         const chip = document.createElement("span");
         chip.className = "group-team";
+        chip.dataset.team = teamName;
         const flag = document.createElement("span");
         const iso = getCountryCode(teamName);
         if (iso) {
@@ -808,6 +809,26 @@ function buildGroupHeader(group) {
     return el;
 }
 
+// Stylized FIFA World Cup trophy silhouette, used for the Introduction
+// section instead of a generic trophy emoji. Globe + tulip arms + green
+// malachite-banded pedestal.
+const WORLD_CUP_TROPHY_SVG = `<svg viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="trophy-svg">
+<defs>
+<linearGradient id="trophy-gold" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#fde68a"/>
+<stop offset="50%" stop-color="#fbbf24"/>
+<stop offset="100%" stop-color="#854d0e"/>
+</linearGradient>
+</defs>
+<circle cx="16" cy="7" r="5.5" fill="url(#trophy-gold)" stroke="#78350f" stroke-width="0.4"/>
+<ellipse cx="16" cy="5" rx="2.5" ry="1" fill="#fef3c7" opacity="0.7"/>
+<path d="M 10 12 C 8 18 9 23 12 26 L 20 26 C 23 23 24 18 22 12 C 20 12 19 13 18 13 C 17 13 16.5 13.5 16 13.5 C 15.5 13.5 15 13 14 13 C 13 13 12 12 10 12 Z" fill="url(#trophy-gold)" stroke="#78350f" stroke-width="0.3"/>
+<line x1="12" y1="22" x2="20" y2="22" stroke="#78350f" stroke-width="0.3" opacity="0.5"/>
+<path d="M 11 26 L 21 26 L 22 35 L 10 35 Z" fill="url(#trophy-gold)" stroke="#78350f" stroke-width="0.3"/>
+<rect x="10.2" y="28" width="11.6" height="1.4" fill="#15803d"/>
+<rect x="10.2" y="31" width="11.6" height="1.4" fill="#15803d"/>
+</svg>`;
+
 function buildTeamSection(section) {
     const sectionEl = document.createElement("section");
     sectionEl.className = "team-section";
@@ -824,7 +845,11 @@ function buildTeamSection(section) {
 
     const flagEl = document.createElement("span");
     const iso = getCountryCode(section.team);
-    if (iso) {
+    if (section.team === "Introduction") {
+        // Special-case the Introduction section with a custom trophy SVG.
+        flagEl.className = "team-band-flag trophy-icon";
+        flagEl.innerHTML = WORLD_CUP_TROPHY_SVG;
+    } else if (iso) {
         flagEl.className = `team-band-flag fi fi-${iso}`;
     } else {
         flagEl.className = "team-band-flag";
@@ -910,6 +935,40 @@ function buildSections() {
         for (const [code] of section.stickers) renderSticker(code);
     }
     updateAllStats();
+
+    setupAlbumScrollSpy();
+}
+
+// Highlights the country chip in the (sticky) group header that corresponds
+// to whichever team-section is currently in the focus band just below the
+// sticky header. Uses IntersectionObserver — runs only when sections scroll
+// in/out of the band, so it's essentially free at idle.
+function setupAlbumScrollSpy() {
+    if (window._albumScrollSpy) {
+        window._albumScrollSpy.disconnect();
+        window._albumScrollSpy = null;
+    }
+    const sections = document.querySelectorAll("#sections .team-section");
+    if (sections.length === 0) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+            const teamName = entry.target.dataset.team;
+            if (!teamName) continue;
+            const chip = document.querySelector(`.group-team[data-team="${CSS.escape(teamName)}"]`);
+            if (!chip) continue;
+            chip.classList.toggle("is-current", entry.isIntersecting);
+        }
+    }, {
+        // Focus band: from ~100px below the top of the viewport (clears the
+        // top bar + sticky group header) down to ~85% from the top. A team
+        // becomes "current" when its top edge enters this band.
+        rootMargin: "-100px 0px -85% 0px",
+        threshold: 0,
+    });
+
+    for (const section of sections) observer.observe(section);
+    window._albumScrollSpy = observer;
 }
 
 /* =============================================================

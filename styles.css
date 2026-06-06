@@ -3111,6 +3111,15 @@ main {
     font-weight: 500;
     color: var(--ink-2);
     box-shadow: none;
+    transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+/* Active chip — the country whose section is currently in view */
+.group-team.is-current {
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 600;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px color-mix(in oklch, var(--accent), transparent 70%);
 }
 
 .group-flag {
@@ -3165,6 +3174,19 @@ main {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
     width: 22px;
     height: auto;
+}
+/* Custom trophy SVG used in place of the country flag for Introduction. */
+.team-band-flag.trophy-icon {
+    display: inline-flex;
+    align-items: center;
+    width: 22px;
+    height: 28px;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
+}
+.team-band-flag.trophy-icon .trophy-svg {
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
 .team-band-text {
