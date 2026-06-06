@@ -3334,18 +3334,102 @@ function renderPendingRequest(req, kind) {
     return null;
 }
 
-// PENDING state: the old Accept / Decline / Cancel UI.
+// PENDING state — compact one-row summary.
+// The full body (item lists + Accept/Decline/Modify) lives inside the trade
+// detail modal; clicking the row opens it.
 function renderPendingCard(req, kind) {
+    const row = document.createElement("div");
+    row.className = "pending-request pending-request-row trade-row trade-row-pending";
+
+    const otherId = kind === "incoming" ? req.sender_id : req.recipient_id;
+    const otherName = profileNameById(otherId);
+
+    const items = req.trade_request_items || [];
+    const senderGives = items.filter((i) => i.direction === "sender_gives");
+    const recipientGives = items.filter((i) => i.direction === "recipient_gives");
+
+    // Map roles to the viewer's perspective so both sides read "You give / They give".
+    let myItems, theirItems;
+    if (kind === "incoming") {
+        // I'm the recipient: I give recipient_gives, they give sender_gives.
+        myItems = recipientGives;
+        theirItems = senderGives;
+    } else {
+        // I'm the sender: I give sender_gives, they give recipient_gives.
+        myItems = senderGives;
+        theirItems = recipientGives;
+    }
+
+    // ----- Row 1: header line -----
+    const header = document.createElement("div");
+    header.className = "pending-request-row-header";
+    const title = document.createElement("span");
+    title.className = "pending-request-row-title";
+    title.textContent = kind === "incoming"
+        ? `${otherName} wants to trade`
+        : `Sent to ${otherName}`;
+    header.appendChild(title);
+
+    const statusPill = document.createElement("span");
+    statusPill.className = "pending-status-pill " +
+        (kind === "incoming" ? "pending-status-incoming" : "pending-status-outgoing");
+    statusPill.textContent = kind === "incoming" ? "Awaiting your reply" : "Awaiting their reply";
+    header.appendChild(statusPill);
+
+    row.appendChild(header);
+
+    // ----- Row 2: compact two-side chip layout -----
+    const head = document.createElement("div");
+    head.className = "trade-row-head";
+
+    const sideMine = renderTradeRowSide("You give", myItems, "mine");
+    const sideTheirs = renderTradeRowSide(otherName, theirItems, "theirs");
+    const arrow = document.createElement("div");
+    arrow.className = "trade-row-arrow-center";
+    arrow.innerHTML = '<i data-lucide="arrow-left-right" aria-hidden="true"></i>';
+
+    head.appendChild(sideMine);
+    head.appendChild(arrow);
+    head.appendChild(sideTheirs);
+
+    const openBtn = document.createElement("button");
+    openBtn.type = "button";
+    openBtn.className = "trade-row-open";
+    openBtn.setAttribute("aria-label", "Open trade details");
+    openBtn.innerHTML = '<i data-lucide="chevron-right" aria-hidden="true"></i>';
+    openBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openTradeDetailModal(req, kind);
+    });
+    head.appendChild(openBtn);
+
+    row.appendChild(head);
+
+    // Click anywhere on the row (except buttons) opens the detail overlay.
+    row.addEventListener("click", (e) => {
+        if (e.target.closest("button")) return;
+        openTradeDetailModal(req, kind);
+    });
+    row.style.cursor = "pointer";
+
+    return row;
+}
+
+// Full pending-request body — rendered inside the trade detail modal.
+// Shows both sides' item lists and the action buttons (Accept / Decline /
+// Modify for incoming; Cancel for outgoing).
+function renderPendingDetail(req, kind) {
     const card = document.createElement("div");
-    card.className = "pending-request";
+    card.className = "trade-detail-body-inner";
+
+    const otherId = kind === "incoming" ? req.sender_id : req.recipient_id;
+    const otherName = profileNameById(otherId);
 
     const header = document.createElement("div");
     header.className = "pending-request-header";
-    const otherId = kind === "incoming" ? req.sender_id : req.recipient_id;
-    const otherName = profileNameById(otherId);
-    header.textContent = kind === "incoming"
-        ? `${otherName} wants to trade`
-        : `Sent to ${otherName} · waiting`;
+    header.innerHTML = kind === "incoming"
+        ? `<i data-lucide="mail" class="inline-icon" aria-hidden="true"></i> ${escapeHtml(otherName)} wants to trade`
+        : `<i data-lucide="send" class="inline-icon" aria-hidden="true"></i> Sent to ${escapeHtml(otherName)} · waiting on reply`;
     card.appendChild(header);
 
     const items = req.trade_request_items || [];
@@ -3397,6 +3481,13 @@ function renderPendingCard(req, kind) {
         accept.textContent = "Accept";
         accept.addEventListener("click", () => onAcceptRequest(req.id, accept));
         actions.appendChild(accept);
+
+        const modify = document.createElement("button");
+        modify.className = "btn btn-secondary";
+        modify.type = "button";
+        modify.textContent = "Modify";
+        modify.addEventListener("click", () => enterModifyMode(req));
+        actions.appendChild(modify);
 
         const decline = document.createElement("button");
         decline.className = "btn btn-secondary";
@@ -3831,7 +3922,7 @@ function renderAcceptedDetail(req) {
    full pipeline + shipments + chat. Closes on backdrop click / Esc /
    close X. Cleans up the embedded chat realtime subscription on close.
    ------------------------------------------------------------------------ */
-async function openTradeDetailModal(req) {
+async function openTradeDetailModal(req, kind) {
     const modal = document.getElementById("trade-detail-modal");
     const body = document.getElementById("trade-detail-body");
     if (!modal || !body) return;
@@ -3839,10 +3930,39 @@ async function openTradeDetailModal(req) {
     // Stash the current trade so it can be re-rendered if state changes
     // while the modal is open (e.g. after a Sent/Received action).
     modal.dataset.tradeId = req.id;
+    // Remember the viewer's role so we can re-render after a Modify-cancel.
+    if (kind) modal.dataset.tradeKind = kind;
+    else if (currentUser) {
+        modal.dataset.tradeKind = req.recipient_id === currentUser.id ? "incoming" : "outgoing";
+    }
 
     body.innerHTML = "";
-    body.appendChild(renderAcceptedDetail(req));
+    if (req.status === "pending") {
+        body.appendChild(renderPendingDetail(req, modal.dataset.tradeKind || "incoming"));
+    } else {
+        body.appendChild(renderAcceptedDetail(req));
+    }
     modal.classList.remove("hidden");
+    refreshIcons();
+}
+
+// Re-render the modal body for the currently-open trade (used after
+// switching between read-only and Modify mode).
+function rerenderTradeDetailModal() {
+    const modal = document.getElementById("trade-detail-modal");
+    const body = document.getElementById("trade-detail-body");
+    if (!modal || !body) return;
+    const tradeId = modal.dataset.tradeId;
+    if (!tradeId) return;
+    const all = [...pendingRequestsCache.incoming, ...pendingRequestsCache.outgoing];
+    const req = all.find((r) => String(r.id) === String(tradeId));
+    if (!req) return;
+    body.innerHTML = "";
+    if (req.status === "pending") {
+        body.appendChild(renderPendingDetail(req, modal.dataset.tradeKind || "incoming"));
+    } else {
+        body.appendChild(renderAcceptedDetail(req));
+    }
     refreshIcons();
 }
 
@@ -3859,6 +3979,285 @@ function closeTradeDetailModal() {
         body.innerHTML = "";
     }
     modal.dataset.tradeId = "";
+    modal.dataset.tradeKind = "";
+}
+
+/* ----- Modify (counter-offer) mode --------------------------------------
+   When the recipient hits "Modify" on an incoming pending request, swap the
+   modal body for a picker that lets them adjust both sides, then submit a
+   counter-offer. The counter is implemented as: decline the original +
+   create a fresh pending trade_request with sender/recipient roles flipped
+   so the original sender is now the one awaiting approval.
+   ------------------------------------------------------------------------ */
+function enterModifyMode(req) {
+    const body = document.getElementById("trade-detail-body");
+    if (!body) return;
+    body.innerHTML = "";
+    body.appendChild(renderModifyView(req));
+    refreshIcons();
+}
+
+function renderModifyView(req) {
+    const otherId = req.sender_id === currentUser?.id ? req.recipient_id : req.sender_id;
+    const otherName = profileNameById(otherId);
+
+    // Pools: from the partner's POV they offered sender_gives & asked recipient_gives.
+    // From my (recipient) POV: I'll give recipient_gives, I'll get sender_gives.
+    const items = req.trade_request_items || [];
+    const initialGives = new Set(
+        items.filter((i) => i.direction === "recipient_gives").map((i) => i.sticker_code)
+    );
+    const initialGets = new Set(
+        items.filter((i) => i.direction === "sender_gives").map((i) => i.sticker_code)
+    );
+
+    // Live selection state mutated by clicks.
+    const giveSel = new Set(initialGives);
+    const getSel = new Set(initialGets);
+
+    const myCol = collection || {};
+    const theirCol = (familyData?.collections && familyData.collections[otherId]) || {};
+    const matches = computeTradeMatches(myCol, theirCol, {}, {});
+
+    // Pool = matches (current dupes) UNION codes already in the trade, so the
+    // user can still see/deselect the original picks even if they don't strictly
+    // match the dupes-vs-gaps criteria.
+    const giveCodes = uniqueOrdered([
+        ...matches.youHaveTheyNeed.map((m) => m.code),
+        ...initialGives,
+    ]);
+    const getCodes = uniqueOrdered([
+        ...matches.theyHaveYouNeed.map((m) => m.code),
+        ...initialGets,
+    ]);
+
+    const wrap = document.createElement("div");
+    wrap.className = "trade-detail-body-inner modify-view";
+
+    const header = document.createElement("div");
+    header.className = "pending-request-header";
+    header.innerHTML = `<i data-lucide="edit-3" class="inline-icon" aria-hidden="true"></i> Counter-offer to ${escapeHtml(otherName)}`;
+    wrap.appendChild(header);
+
+    const blurb = document.createElement("p");
+    blurb.className = "modify-blurb";
+    blurb.textContent = `Pick the stickers you'd like to swap. Your changes are sent back to ${otherName} for approval.`;
+    wrap.appendChild(blurb);
+
+    const grid = document.createElement("div");
+    grid.className = "modify-grid";
+
+    const summaryEl = document.createElement("div");
+    summaryEl.className = "modify-summary";
+
+    const updateSummary = () => {
+        summaryEl.textContent = `You'd give ${giveSel.size} · You'd get ${getSel.size}`;
+        const sendBtn = wrap.querySelector(".modify-send");
+        if (sendBtn) {
+            sendBtn.disabled = giveSel.size === 0 && getSel.size === 0;
+        }
+    };
+
+    grid.appendChild(renderModifyColumn({
+        title: "You'd give",
+        subtitle: "From your duplicates",
+        codes: giveCodes,
+        selected: giveSel,
+        ownCol: myCol,
+        emptyMsg: "You have no duplicates that match what they collect.",
+        onChange: updateSummary,
+    }));
+    grid.appendChild(renderModifyColumn({
+        title: `${otherName}'d give`,
+        subtitle: `From ${otherName}'s duplicates`,
+        codes: getCodes,
+        selected: getSel,
+        ownCol: theirCol,
+        emptyMsg: `${otherName} has no duplicates you're missing.`,
+        onChange: updateSummary,
+    }));
+
+    wrap.appendChild(grid);
+    wrap.appendChild(summaryEl);
+
+    const actions = document.createElement("div");
+    actions.className = "pending-request-actions modify-actions";
+
+    const send = document.createElement("button");
+    send.className = "btn btn-primary modify-send";
+    send.type = "button";
+    send.textContent = "Send counter-offer";
+    send.addEventListener("click", () =>
+        onSendCounterOffer(req, [...giveSel], [...getSel], send)
+    );
+    actions.appendChild(send);
+
+    const cancel = document.createElement("button");
+    cancel.className = "btn btn-secondary";
+    cancel.type = "button";
+    cancel.textContent = "Back";
+    cancel.addEventListener("click", () => rerenderTradeDetailModal());
+    actions.appendChild(cancel);
+
+    wrap.appendChild(actions);
+
+    updateSummary();
+    return wrap;
+}
+
+function renderModifyColumn({ title, subtitle, codes, selected, ownCol, emptyMsg, onChange }) {
+    const col = document.createElement("div");
+    col.className = "modify-col";
+
+    const head = document.createElement("div");
+    head.className = "modify-col-head";
+
+    const titleEl = document.createElement("div");
+    titleEl.className = "modify-col-title";
+    titleEl.textContent = title;
+    head.appendChild(titleEl);
+
+    const subEl = document.createElement("div");
+    subEl.className = "modify-col-sub";
+    subEl.textContent = subtitle;
+    head.appendChild(subEl);
+
+    col.appendChild(head);
+
+    if (codes.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "modify-col-empty";
+        empty.textContent = emptyMsg;
+        col.appendChild(empty);
+        return col;
+    }
+
+    const list = document.createElement("div");
+    list.className = "modify-col-list";
+
+    for (const code of codes) {
+        const meta = getStickerIndex()[code] || {};
+        const team = meta.team || "";
+        const playerName = meta.name || code;
+        const iso = team ? getCountryCode(team) : null;
+        const ownerCount = ownCol[code] || 0;
+
+        const item = document.createElement("label");
+        item.className = "modify-item";
+        if (selected.has(code)) item.classList.add("selected");
+
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = selected.has(code);
+        cb.addEventListener("change", () => {
+            if (cb.checked) selected.add(code); else selected.delete(code);
+            item.classList.toggle("selected", cb.checked);
+            onChange?.();
+        });
+        item.appendChild(cb);
+
+        const main = document.createElement("div");
+        main.className = "modify-item-main";
+
+        const top = document.createElement("div");
+        top.className = "modify-item-top";
+        if (iso) {
+            const flag = document.createElement("span");
+            flag.className = `fi fi-${iso}`;
+            top.appendChild(flag);
+        }
+        const codeSpan = document.createElement("span");
+        codeSpan.className = "trade-row-code";
+        codeSpan.textContent = formatStickerCode(code);
+        top.appendChild(codeSpan);
+
+        if (ownerCount > 0) {
+            const owns = document.createElement("span");
+            owns.className = "modify-item-owns";
+            owns.textContent = `×${ownerCount}`;
+            owns.title = `Owns ${ownerCount}`;
+            top.appendChild(owns);
+        }
+        main.appendChild(top);
+
+        const nameEl = document.createElement("div");
+        nameEl.className = "modify-item-name";
+        nameEl.textContent = playerName;
+        main.appendChild(nameEl);
+
+        item.appendChild(main);
+        list.appendChild(item);
+    }
+
+    col.appendChild(list);
+    return col;
+}
+
+function uniqueOrdered(arr) {
+    const seen = new Set();
+    const out = [];
+    for (const v of arr) {
+        if (seen.has(v)) continue;
+        seen.add(v);
+        out.push(v);
+    }
+    return out;
+}
+
+// Submit a counter-offer:
+//   1) Decline the original request.
+//   2) Create a new pending trade_request with roles flipped — the current
+//      user becomes the sender, the original sender becomes the recipient,
+//      so they get a fresh "wants to trade" card to approve.
+async function onSendCounterOffer(originalReq, gives, gets, btnEl) {
+    if (!sb || !currentUser) return;
+    if (gives.length === 0 && gets.length === 0) return;
+
+    const originalSenderId = originalReq.sender_id;
+    if (btnEl) { btnEl.disabled = true; btnEl.textContent = "Sending…"; }
+    try {
+        // Step 1 — close out the original.
+        const { error: declineErr } = await sb
+            .from("trade_requests")
+            .update({ status: "declined" })
+            .eq("id", originalReq.id);
+        if (declineErr) throw declineErr;
+
+        // Step 2 — create the counter.
+        const { data: req, error: reqErr } = await sb
+            .from("trade_requests")
+            .insert({
+                sender_id: currentUser.id,
+                recipient_id: originalSenderId,
+                status: "pending",
+            })
+            .select("id")
+            .single();
+        if (reqErr || !req) throw reqErr || new Error("Couldn't create counter-offer");
+
+        // In the new request the current user is the sender:
+        //   - what I'm offering           → sender_gives
+        //   - what I'm asking from them   → recipient_gives
+        const newItems = [
+            ...gives.map((code) => ({ request_id: req.id, sticker_code: code, direction: "sender_gives", quantity: 1 })),
+            ...gets.map((code) => ({ request_id: req.id, sticker_code: code, direction: "recipient_gives", quantity: 1 })),
+        ];
+        if (newItems.length > 0) {
+            const { error: itemsErr } = await sb.from("trade_request_items").insert(newItems);
+            if (itemsErr) {
+                await sb.from("trade_requests").delete().eq("id", req.id);
+                throw itemsErr;
+            }
+        }
+
+        alert(`Counter-offer sent to ${profileNameById(originalSenderId)}.`);
+        closeTradeDetailModal();
+        await refreshPendingRequests();
+    } catch (err) {
+        console.error(err);
+        showToast(`Couldn't send counter-offer: ${err.message || err}`);
+        if (btnEl) { btnEl.disabled = false; btnEl.textContent = "Send counter-offer"; }
+    }
 }
 
 function wireTradeDetailControls() {
