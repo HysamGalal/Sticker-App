@@ -4,7 +4,7 @@
 // Team flag emoji + gradient colors (used by the UI for the team header banner).
 // Colors are drawn from each nation's flag — for special sections we pick fitting accents.
 const TEAM_META = {
-    "Introduction": { flag: "🎟️", colors: ["#6366f1", "#0ea5e9"] },
+    "Introduction": { flag: "🏆", colors: ["#6366f1", "#0ea5e9"] },
     "World Cup History": { flag: "🏆", colors: ["#f59e0b", "#dc2626"] },
     "Algeria": { flag: "🇩🇿", colors: ["#006233", "#ffffff", "#d21034"] },
     "Argentina": { flag: "🇦🇷", colors: ["#74acdf", "#ffffff", "#74acdf"] },

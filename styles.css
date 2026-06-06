@@ -400,7 +400,10 @@ button, input, select, textarea { font-family: inherit; color: inherit; }
 .main-content {
     grid-area: main;
     padding: 1.5rem 1rem 3rem;
-    overflow-x: hidden;
+    /* `clip` prevents horizontal overflow leaks without creating a scroll
+       container — important so `position: sticky` on group headers
+       continues to work against the viewport. */
+    overflow-x: clip;
 }
 
 /* View container — exactly one .view is shown at a time. */
@@ -3061,8 +3064,19 @@ main {
 /* ----- Group header ----- */
 
 .group-header {
-    margin: 2.5rem 0 1.25rem;
-    padding: 0 0.25rem;
+    margin: 2.5rem 0 0;
+    padding: 14px 0 14px;
+    /* Sticks just under the top bar as you scroll through that group's
+       teams. As soon as the next .group-header passes through, the new
+       one pushes the old one out (natural CSS sticky behavior).
+       top = top-bar height (~50px) so it doesn't slide behind the bar. */
+    position: sticky;
+    top: 50px;
+    z-index: 5;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border-bottom: 1px solid var(--line);
 }
 .group-header:first-child { margin-top: 1.5rem; }
 
