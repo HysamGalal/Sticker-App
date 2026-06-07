@@ -3978,6 +3978,17 @@ async function openTradeDetailModal(req, kind) {
         body.appendChild(renderPendingDetail(req, modal.dataset.tradeKind || "incoming"));
     } else {
         body.appendChild(renderAcceptedDetail(req));
+        // Eagerly attach the viewer to the trade's chat channel so the
+        // other party's messages reach them via realtime + the unread badge.
+        // Without this, the channel only gets created on the first "Open chat"
+        // click — which means whoever doesn't open the chat first never
+        // becomes a member and silently misses every message.
+        if (req.status === "accepted") {
+            getOrCreateTradeChannel(req.id)
+                .then(() => fetchMyChannels())
+                .then((cs) => { chatChannels = cs; updateChatBadges(); })
+                .catch((e) => console.warn("Trade chat bootstrap failed:", e));
+        }
     }
     modal.classList.remove("hidden");
     refreshIcons();
@@ -4533,6 +4544,30 @@ async function refreshPendingRequests() {
     updateFamilyBadge();
     updateNotificationBanner();
     renderPendingSection();
+    // Ensure both parties are added to each accepted trade's chat channel,
+    // so a message from one party always reaches the other (otherwise the
+    // late joiner would never receive realtime events on a channel they
+    // aren't a member of).
+    ensureTradeChatChannels().catch((e) => console.warn("ensureTradeChatChannels failed:", e));
+}
+
+// For every accepted (in-progress) trade, hit the get_or_create RPC. The RPC
+// adds the caller as a channel_member, so calling it from BOTH sides
+// guarantees both parties can see the trade chat + receive realtime updates.
+// Pending and completed trades don't have chat surfaces so we skip them.
+async function ensureTradeChatChannels() {
+    if (!sb || !currentUser) return;
+    const all = [...pendingRequestsCache.incoming, ...pendingRequestsCache.outgoing]
+        .filter((r) => r.status === "accepted");
+    if (all.length === 0) return;
+    await Promise.allSettled(all.map((r) => getOrCreateTradeChannel(r.id)));
+    // Channels cache may now have new entries — refresh so badges pick them up.
+    try {
+        chatChannels = await fetchMyChannels();
+        updateChatBadges();
+    } catch (e) {
+        console.warn("Failed to refresh channel cache after bootstrap:", e);
+    }
 }
 
 /* ---------- Completed trades ---------- */
