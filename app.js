@@ -3360,6 +3360,15 @@ function renderPendingRequest(req, kind) {
 function renderPendingCard(req, kind) {
     const row = document.createElement("div");
     row.className = "pending-request pending-request-row trade-row trade-row-pending";
+    const hasUnread = tradeHasUnreadChat(req);
+    if (hasUnread) {
+        row.classList.add("has-unread-chat");
+        const unread = document.createElement("span");
+        unread.className = "trade-row-unread";
+        unread.title = "New message in this trade chat";
+        unread.innerHTML = '<i data-lucide="message-square-dot" aria-hidden="true"></i><span>New</span>';
+        row.appendChild(unread);
+    }
 
     const otherId = kind === "incoming" ? req.sender_id : req.recipient_id;
     const otherName = profileNameById(otherId);
@@ -3524,6 +3533,12 @@ function renderPendingDetail(req, kind) {
         actions.appendChild(cancel);
     }
     card.appendChild(actions);
+
+    // Chat panel — available from the moment the trade is proposed so both
+    // parties can negotiate before accepting. Same pattern as the accepted
+    // detail view: mounted eagerly, with a Show/Hide toggle.
+    card.appendChild(renderTradeChatSection(req));
+
     return card;
 }
 
@@ -4008,20 +4023,19 @@ async function openTradeDetailModal(req, kind) {
         body.appendChild(renderPendingDetail(req, modal.dataset.tradeKind || "incoming"));
     } else {
         body.appendChild(renderAcceptedDetail(req));
-        // Eagerly attach the viewer to the trade's chat channel so the
-        // other party's messages reach them via realtime + the unread badge.
-        // Without this, the channel only gets created on the first "Open chat"
-        // click — which means whoever doesn't open the chat first never
-        // becomes a member and silently misses every message.
-        if (req.status === "accepted") {
-            getOrCreateTradeChannel(req.id)
-                .then(() => fetchMyChannels())
-                .then((cs) => { chatChannels = cs; updateChatBadges(); })
-                .catch((e) => console.warn("Trade chat bootstrap failed:", e));
-        }
     }
     modal.classList.remove("hidden");
     refreshIcons();
+
+    // Eagerly attach the viewer to the trade's chat channel so the other
+    // party's messages reach them via realtime + the unread badge. Done
+    // for pending + accepted (both states surface a chat panel).
+    if (req.status === "pending" || req.status === "accepted") {
+        getOrCreateTradeChannel(req.id)
+            .then(() => fetchMyChannels())
+            .then((cs) => { chatChannels = cs; updateChatBadges(); renderPendingSection(); })
+            .catch((e) => console.warn("Trade chat bootstrap failed:", e));
+    }
 }
 
 // Re-render the modal body for the currently-open trade (used after
@@ -4582,20 +4596,23 @@ async function refreshPendingRequests() {
     ensureTradeChatChannels().catch((e) => console.warn("ensureTradeChatChannels failed:", e));
 }
 
-// For every accepted (in-progress) trade, hit the get_or_create RPC. The RPC
-// adds the caller as a channel_member, so calling it from BOTH sides
-// guarantees both parties can see the trade chat + receive realtime updates.
-// Pending and completed trades don't have chat surfaces so we skip them.
+// For every active trade I'm party to (pending OR accepted), hit the
+// get_or_create RPC. The RPC adds the caller as a channel_member, so calling
+// it from BOTH sides guarantees both parties can see the trade chat +
+// receive realtime updates. Chat exists from the moment a trade is proposed
+// so the two collectors can negotiate before accepting.
 async function ensureTradeChatChannels() {
     if (!sb || !currentUser) return;
     const all = [...pendingRequestsCache.incoming, ...pendingRequestsCache.outgoing]
-        .filter((r) => r.status === "accepted");
+        .filter((r) => r.status === "pending" || r.status === "accepted");
     if (all.length === 0) return;
     await Promise.allSettled(all.map((r) => getOrCreateTradeChannel(r.id)));
     // Channels cache may now have new entries — refresh so badges pick them up.
     try {
         chatChannels = await fetchMyChannels();
         updateChatBadges();
+        // Re-render pending section so any new "New" badges appear.
+        renderPendingSection();
     } catch (e) {
         console.warn("Failed to refresh channel cache after bootstrap:", e);
     }

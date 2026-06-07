@@ -4822,11 +4822,16 @@ input[type="search"].search-input,
    header line and the two-side row stack vertically inside this card. */
 .pending-request.pending-request-row {
     display: block;
+    position: relative;
     cursor: pointer;
     padding: 12px 16px;
     border-bottom: 1px solid var(--line);
     font-size: inherit;
     transition: border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+}
+.pending-request.pending-request-row.has-unread-chat {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), var(--shadow-sm);
 }
 .pending-request.pending-request-row:hover {
     border-color: var(--line-2);
