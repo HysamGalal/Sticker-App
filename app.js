@@ -2121,11 +2121,18 @@ function channelIsUnread(c) {
     return last > read;
 }
 
+// A channel is "trade-scoped" if either its kind says so OR it carries a
+// trade_id. The trade_id check catches legacy rows where the `kind` column
+// wasn't populated — without it, those rows leak into the Community badge.
+function isTradeChannel(c) {
+    return c && (c.kind === "trade" || !!c.trade_id);
+}
+
 // Find the trade-scoped chat channel for the given trade request (if any).
 function getTradeChatChannel(req) {
     if (!req) return null;
     return chatChannels.find(
-        (c) => c.kind === "trade" && String(c.trade_id) === String(req.id)
+        (c) => isTradeChannel(c) && String(c.trade_id) === String(req.id)
     ) || null;
 }
 
@@ -2133,6 +2140,24 @@ function getTradeChatChannel(req) {
 function tradeHasUnreadChat(req) {
     const c = getTradeChatChannel(req);
     return c ? channelIsUnread(c) : false;
+}
+
+// Console diagnostic: from DevTools, run `__debugUnread()` to see every
+// channel currently flagged unread, including its kind / trade_id / label_id.
+// Useful when a badge count looks wrong and you need to find the culprit.
+if (typeof window !== "undefined") {
+    window.__debugUnread = () => chatChannels
+        .filter((c) => channelIsUnread(c))
+        .map((c) => ({
+            id: c.id,
+            name: c.name,
+            kind: c.kind,
+            trade_id: c.trade_id,
+            label_id: c.label_id,
+            last_message_at: c.last_message_at,
+            last_read_at: c.last_read_at,
+            countsAsCommunity: !isTradeChannel(c),
+        }));
 }
 
 /* ----- Reusable chat panel (used by Community, group chats, trade cards) ----- */
@@ -2343,7 +2368,11 @@ function updateChatBadges() {
     let communityUnread = 0;
     for (const c of chatChannels) {
         if (!channelIsUnread(c)) continue;
-        if (c.kind !== "trade") communityUnread++;
+        // Only direct + label chats belong to the Community badge. Trade
+        // chats fold into the Trades badge (via updateFamilyBadge). Use the
+        // isTradeChannel helper so legacy rows with kind=null but a
+        // trade_id don't leak in.
+        if (!isTradeChannel(c)) communityUnread++;
     }
     const communityBadge = document.getElementById("community-badge");
     if (communityBadge) {
