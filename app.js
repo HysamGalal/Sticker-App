@@ -1514,6 +1514,10 @@ const LABEL_COLOR_PRESETS = [
 
 // Cached labels for the current user. byMember maps memberId -> [{ labelId, name, color }, ...].
 let labelsData = { list: [], byMember: new Map() };
+// Becomes true after the first successful refreshLabels() call. Used by the
+// orphan-channel guard so we don't misidentify channels as orphans while
+// labelsData is still empty during the initial app boot.
+let labelsLoaded = false;
 let activeLabelFilter = null; // null = "All", else a label.id
 
 async function fetchLabels() {
@@ -1606,6 +1610,10 @@ async function removeMemberFromLabel(labelId, memberId) {
 async function refreshLabels() {
     try {
         labelsData = await fetchLabels();
+        labelsLoaded = true;
+        // Re-run badge math now that we know which labels still exist —
+        // any orphan label channels surfaced during boot can be cleared.
+        updateChatBadges();
     } catch (e) {
         console.error("Failed to fetch labels:", e);
         labelsData = { list: [], byMember: new Map() };
@@ -2128,6 +2136,24 @@ function isTradeChannel(c) {
     return c && (c.kind === "trade" || !!c.trade_id);
 }
 
+// A channel is "orphaned" if it's a label/community group chat whose label
+// has been deleted. The channel + membership rows linger but there's no UI
+// surface to open the chat, so unread state can never be cleared by the
+// user. We exclude these from the badge math and asynchronously mark them
+// read on the server so they don't keep haunting.
+//
+// IMPORTANT: only treat a channel as orphan once labels have actually been
+// fetched (labelsLoaded). Otherwise during boot, when labelsData.list is
+// still empty, every label channel would look orphan and get nuked.
+function isOrphanLabelChannel(c) {
+    if (!c || !labelsLoaded) return false;
+    const isLabel = c.kind === "label" || (!!c.label_id && !c.trade_id);
+    if (!isLabel) return false;
+    if (!c.label_id) return false;
+    const list = labelsData?.list || [];
+    return !list.some((l) => String(l.id) === String(c.label_id));
+}
+
 // Find the trade-scoped chat channel for the given trade request (if any).
 function getTradeChatChannel(req) {
     if (!req) return null;
@@ -2366,13 +2392,15 @@ function unmountChatPanel(host) {
 
 function updateChatBadges() {
     let communityUnread = 0;
+    const orphansToHeal = [];
     for (const c of chatChannels) {
         if (!channelIsUnread(c)) continue;
-        // Only direct + label chats belong to the Community badge. Trade
-        // chats fold into the Trades badge (via updateFamilyBadge). Use the
-        // isTradeChannel helper so legacy rows with kind=null but a
-        // trade_id don't leak in.
-        if (!isTradeChannel(c)) communityUnread++;
+        // Skip trade chats — they belong to the Trades badge.
+        if (isTradeChannel(c)) continue;
+        // Skip (and self-heal) channels whose community/label has been
+        // deleted — there's no UI surface to mark them read.
+        if (isOrphanLabelChannel(c)) { orphansToHeal.push(c); continue; }
+        communityUnread++;
     }
     const communityBadge = document.getElementById("community-badge");
     if (communityBadge) {
@@ -2385,6 +2413,14 @@ function updateChatBadges() {
     }
     // Trade chat unread folds into the existing trades badge via updateFamilyBadge.
     updateFamilyBadge();
+
+    // Fire-and-forget: mark the orphan label channels as read on the server
+    // so future visits (or other devices) don't show the same phantom badge.
+    for (const c of orphansToHeal) {
+        markChannelRead(c.id).then(() => {
+            c.last_read_at = new Date().toISOString();
+        }).catch(() => {});
+    }
 }
 
 /* ----- Group chat modal (label-scoped) ----- */
