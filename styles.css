@@ -4478,6 +4478,7 @@ input[type="search"].search-input,
    My-trades list. Whole row is clickable; opens the detail modal.
    ==================================================================== */
 .trade-row.trade-row-accepted {
+    position: relative;
     padding: 14px 18px 12px;
     cursor: pointer;
     transition: border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
@@ -4486,6 +4487,39 @@ input[type="search"].search-input,
     border-color: var(--line-2);
     transform: translateY(-1px);
     box-shadow: var(--shadow-sm);
+}
+/* When the linked trade chat has unread messages, lift the whole card with
+   an accent border so the row catches the eye in the list. */
+.trade-row.trade-row-accepted.has-unread-chat {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), var(--shadow-sm);
+}
+/* Pill on the upper-right corner with an envelope/chat icon + "New" label.
+   Positioned absolutely so it doesn't disturb the grid head layout. */
+.trade-row-unread {
+    position: absolute;
+    top: 8px;
+    right: 44px;                  /* leave room for the chevron open button */
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    z-index: 1;
+    animation: trade-unread-pulse 1.8s ease-in-out infinite;
+    pointer-events: none;
+}
+.trade-row-unread svg { width: 12px; height: 12px; }
+@keyframes trade-unread-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--accent), transparent 60%); }
+    50%      { box-shadow: 0 0 0 6px color-mix(in oklch, var(--accent), transparent 100%); }
 }
 
 /* Row 1: two sides side-by-side with arrow in the middle, open chevron at the end */

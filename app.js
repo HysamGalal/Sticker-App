@@ -2096,6 +2096,12 @@ function subscribeToAllChannels() {
                 try { chatChannels = await fetchMyChannels(); } catch (e) { /* ignore */ }
             }
             updateChatBadges();
+            // If this is a trade chat, re-render the trade list so the per-row
+            // unread indicator appears without requiring a page refresh.
+            const affected = channel || chatChannels.find((c) => c.id === msg.channel_id);
+            if (affected && affected.kind === "trade") {
+                renderPendingSection();
+            }
         })
         .subscribe();
 }
@@ -2113,6 +2119,20 @@ function channelIsUnread(c) {
     const last = new Date(c.last_message_at).getTime();
     const read = new Date(c.last_read_at || 0).getTime();
     return last > read;
+}
+
+// Find the trade-scoped chat channel for the given trade request (if any).
+function getTradeChatChannel(req) {
+    if (!req) return null;
+    return chatChannels.find(
+        (c) => c.kind === "trade" && String(c.trade_id) === String(req.id)
+    ) || null;
+}
+
+// True if the trade's chat has messages I haven't read yet.
+function tradeHasUnreadChat(req) {
+    const c = getTradeChatChannel(req);
+    return c ? channelIsUnread(c) : false;
 }
 
 /* ----- Reusable chat panel (used by Community, group chats, trade cards) ----- */
@@ -3649,6 +3669,16 @@ function renderTradeLifecycle(req) {
 function renderAcceptedCard(req, kind) {
     const row = document.createElement("div");
     row.className = "pending-request pending-accepted trade-row trade-row-accepted";
+    const hasUnread = tradeHasUnreadChat(req);
+    if (hasUnread) {
+        row.classList.add("has-unread-chat");
+        // Absolute overlay so it doesn't disturb the head grid layout.
+        const unread = document.createElement("span");
+        unread.className = "trade-row-unread";
+        unread.title = "New message in this trade chat";
+        unread.innerHTML = '<i data-lucide="message-square-dot" aria-hidden="true"></i><span>New</span>';
+        row.appendChild(unread);
+    }
 
     const isViewerSender = req.sender_id === currentUser.id;
     const otherId = isViewerSender ? req.recipient_id : req.sender_id;
@@ -4324,7 +4354,9 @@ function wireTradeDetailControls() {
     });
 }
 
-// Creates the "Chat" toggle + lazy-mounted panel for an accepted-trade card.
+// Creates the chat panel for an accepted-trade card. The panel is mounted
+// eagerly so the chat is open by default — the toggle stays so users can
+// collapse it if they want, but no click is required to see the messages.
 function renderTradeChatSection(req) {
     const wrap = document.createElement("div");
     wrap.className = "trade-card-chat";
@@ -4334,33 +4366,32 @@ function renderTradeChatSection(req) {
     toggle.className = "trade-chat-toggle";
     const updateToggleLabel = (open) => {
         toggle.innerHTML = "";
-        toggle.appendChild(lucideIcon(open ? "chevron-up" : "message-square"));
+        toggle.appendChild(lucideIcon(open ? "chevron-up" : "chevron-down"));
         const label = document.createElement("span");
-        label.textContent = open ? "Hide chat" : "Open chat";
+        label.textContent = open ? "Hide chat" : "Show chat";
         toggle.appendChild(label);
         refreshIcons();
     };
-    updateToggleLabel(false);
 
     const host = document.createElement("div");
-    host.className = "trade-card-chat-host hidden";
+    host.className = "trade-card-chat-host";
 
-    toggle.addEventListener("click", async () => {
-        if (host.classList.contains("hidden")) {
-            // Lazy-load: only fetch the channel when the user expands.
-            try {
-                const channelId = await getOrCreateTradeChannel(req.id);
-                mountChatPanel(host, channelId, { placeholder: "Message about this trade…" });
-                host.classList.remove("hidden");
-                updateToggleLabel(true);
-            } catch (e) {
-                alert("Couldn't open trade chat: " + (e.message || e));
-            }
-        } else {
-            unmountChatPanel(host);
-            host.classList.add("hidden");
-            updateToggleLabel(false);
+    // Eagerly mount the chat panel so users see the conversation immediately.
+    (async () => {
+        try {
+            const channelId = await getOrCreateTradeChannel(req.id);
+            mountChatPanel(host, channelId, { placeholder: "Message about this trade…" });
+        } catch (e) {
+            console.error("Couldn't open trade chat:", e);
+            host.innerHTML = `<div class="chat-empty-inline">Couldn't open trade chat: ${escapeHtml(e.message || String(e))}</div>`;
         }
+    })();
+    updateToggleLabel(true);
+
+    toggle.addEventListener("click", () => {
+        const open = !host.classList.contains("hidden");
+        host.classList.toggle("hidden", open);  // if it was open, hide it
+        updateToggleLabel(!open);
     });
 
     wrap.appendChild(toggle);
